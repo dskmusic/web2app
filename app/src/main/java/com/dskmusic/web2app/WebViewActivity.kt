@@ -43,6 +43,7 @@ class WebViewActivity : BaseActivity() {
         binding.webView.settings.domStorageEnabled = true
         binding.webView.webViewClient = WebViewClient()
         binding.webView.webChromeClient = WebChromeClient()
+        hideWebViewUserAgentMarker()
         applyForcedTheme()
         applyDesktopMode()
         applyZoom()
@@ -99,6 +100,19 @@ class WebViewActivity : BaseActivity() {
             // this session (falls back to the shared/default one until the process restarts).
             // Full concurrent isolation would need a process-per-shortcut manifest split.
         }
+    }
+
+    /**
+     * The default WebView user agent includes a "; wv)" marker identifying it as an embedded
+     * WebView. Google (and some other sites) deliberately reject OAuth/login flows from that
+     * marker (error 403 disallowed_useragent) as an anti-phishing measure, even though the page
+     * otherwise renders and behaves identically. Stripping it makes the UA match a regular Chrome
+     * browser's, unblocking those flows. Overwritten by applyDesktopMode() when that's enabled,
+     * since its full desktop UA string doesn't carry the marker either.
+     */
+    private fun hideWebViewUserAgentMarker() {
+        val settings = binding.webView.settings
+        settings.userAgentString = settings.userAgentString.replace("; wv", "")
     }
 
     private fun applyDesktopMode() {
