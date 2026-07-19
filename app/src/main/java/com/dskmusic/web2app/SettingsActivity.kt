@@ -5,7 +5,7 @@ import android.os.Bundle
 import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.appcompat.app.AlertDialog
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import androidx.core.text.HtmlCompat
 import androidx.lifecycle.lifecycleScope
 import com.dskmusic.web2app.databinding.ActivitySettingsBinding
@@ -118,7 +118,7 @@ class SettingsActivity : BaseActivity() {
     }
 
     private fun confirmReset() {
-        AlertDialog.Builder(this)
+        MaterialAlertDialogBuilder(this)
             .setTitle(R.string.reset_confirm_title)
             .setMessage(R.string.reset_confirm_message)
             .setPositiveButton(R.string.reset_confirm_positive) { _, _ -> performReset() }

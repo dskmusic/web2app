@@ -10,7 +10,7 @@ import android.webkit.WebStorage
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.activity.OnBackPressedCallback
-import androidx.appcompat.app.AlertDialog
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import androidx.webkit.WebSettingsCompat
 import androidx.webkit.WebViewFeature
 import com.dskmusic.web2app.databinding.ActivityWebviewBinding
@@ -67,7 +67,7 @@ class WebViewActivity : BaseActivity() {
     }
 
     private fun confirmExit() {
-        AlertDialog.Builder(this)
+        MaterialAlertDialogBuilder(this)
             .setTitle(R.string.exit_confirm_title)
             .setMessage(R.string.exit_confirm_message)
             .setPositiveButton(R.string.exit_confirm_positive) { _, _ -> finish() }

@@ -25,6 +25,7 @@ import androidx.core.text.HtmlCompat
 import androidx.lifecycle.lifecycleScope
 import com.dskmusic.web2app.databinding.ActivityMainBinding
 import com.dskmusic.web2app.update.UpdateChecker
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.yalantis.ucrop.UCrop
 import kotlinx.coroutines.launch
 import java.io.File
@@ -114,7 +115,7 @@ class MainActivity : BaseActivity() {
     }
 
     private fun confirmExit() {
-        AlertDialog.Builder(this)
+        MaterialAlertDialogBuilder(this)
             .setTitle(R.string.exit_confirm_title)
             .setMessage(R.string.exit_confirm_message)
             .setPositiveButton(R.string.exit_confirm_positive) { _, _ -> finish() }
@@ -208,7 +209,7 @@ class MainActivity : BaseActivity() {
             getString(R.string.image_source_internet),
             getString(R.string.image_source_web_icon)
         )
-        AlertDialog.Builder(this)
+        MaterialAlertDialogBuilder(this)
             .setTitle(R.string.select_image_title)
             .setItems(options) { _, which ->
                 when (which) {
@@ -341,7 +342,7 @@ class MainActivity : BaseActivity() {
         val checkedIndex = if (backgroundColor == null) 0 else if (presetIndex >= 0) presetIndex else values.lastIndex
 
         lateinit var dialog: AlertDialog
-        dialog = AlertDialog.Builder(this)
+        dialog = MaterialAlertDialogBuilder(this)
             .setTitle(R.string.background_color_title)
             .setSingleChoiceItems(names, checkedIndex) { _, which ->
                 dialog.dismiss()
@@ -384,7 +385,7 @@ class MainActivity : BaseActivity() {
             true
         }
 
-        AlertDialog.Builder(this)
+        MaterialAlertDialogBuilder(this)
             .setTitle(R.string.bg_color_pick_transparent)
             .setView(dialogBinding.root)
             .setPositiveButton(android.R.string.ok) { _, _ ->
@@ -452,7 +453,7 @@ class MainActivity : BaseActivity() {
         dialogBinding.etHex.setText(String.format("#%06X", initial and 0xFFFFFF))
         applyColor(initial)
 
-        AlertDialog.Builder(this)
+        MaterialAlertDialogBuilder(this)
             .setTitle(R.string.bg_color_custom)
             .setView(dialogBinding.root)
             .setPositiveButton(android.R.string.ok) { _, _ ->
@@ -464,18 +465,16 @@ class MainActivity : BaseActivity() {
     }
 
     /**
-     * A solid background gets composited into the adaptive-icon safe zone (needs
-     * IconCompat.createWithAdaptiveBitmap so the launcher masks/crops it correctly). A
-     * transparent background is kept as a plain flat bitmap with real alpha instead — the
-     * adaptive path forces an opaque backdrop behind any transparent pixels on most launchers.
+     * "Transparent" falls back to black: real per-pixel transparency isn't respected for pinned
+     * shortcut icons on Android 8+ (confirmed by testing — it always gets backed with an opaque,
+     * usually white, plate), so we fill it ourselves for a predictable result instead of leaving
+     * it to chance.
      */
-    private fun buildFinalIcon(src: Bitmap): Bitmap =
-        if (backgroundColor != null) BitmapUtils.composeAdaptive(src, backgroundColor) else BitmapUtils.compose(src, null)
+    private fun buildFinalIcon(src: Bitmap): Bitmap = BitmapUtils.composeAdaptive(src, backgroundColor ?: Color.BLACK)
 
     private fun refreshPreview() {
         val src = croppedBitmap ?: return
-        val bitmap = buildFinalIcon(src)
-        binding.ivPreview.setImageBitmap(if (backgroundColor != null) BitmapUtils.previewCrop(bitmap) else bitmap)
+        binding.ivPreview.setImageBitmap(BitmapUtils.previewCrop(buildFinalIcon(src)))
     }
 
     private fun generateShortcut() {
@@ -500,9 +499,8 @@ class MainActivity : BaseActivity() {
         val id = editingId ?: "shortcut_${System.currentTimeMillis()}"
 
         val finalIconBitmap = croppedBitmap?.let { buildFinalIcon(it) }
-        val icon = finalIconBitmap?.let {
-            if (backgroundColor != null) IconCompat.createWithAdaptiveBitmap(it) else IconCompat.createWithBitmap(it)
-        } ?: IconCompat.createWithResource(this, R.mipmap.ic_launcher)
+        val icon = finalIconBitmap?.let { IconCompat.createWithAdaptiveBitmap(it) }
+            ?: IconCompat.createWithResource(this, R.mipmap.ic_launcher)
 
         val forcedTheme = when (binding.rgShortcutTheme.checkedRadioButtonId) {
             R.id.rbShortcutLight -> WebViewActivity.THEME_LIGHT

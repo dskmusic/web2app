@@ -8,7 +8,7 @@ import android.view.MenuItem
 import android.view.View
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.appcompat.app.AlertDialog
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import androidx.core.content.pm.ShortcutInfoCompat
 import androidx.core.content.pm.ShortcutManagerCompat
 import androidx.core.graphics.drawable.IconCompat
@@ -91,8 +91,7 @@ class ShortcutManagerActivity : BaseActivity() {
         }
         val iconFile = ShortcutStore.iconFile(this, item.id)
         val icon = if (iconFile.exists()) {
-            val bitmap = BitmapFactory.decodeFile(iconFile.absolutePath)
-            if (item.backgroundColor != null) IconCompat.createWithAdaptiveBitmap(bitmap) else IconCompat.createWithBitmap(bitmap)
+            IconCompat.createWithAdaptiveBitmap(BitmapFactory.decodeFile(iconFile.absolutePath))
         } else {
             IconCompat.createWithResource(this, R.mipmap.ic_launcher)
         }
@@ -115,7 +114,7 @@ class ShortcutManagerActivity : BaseActivity() {
     }
 
     private fun onDelete(item: SavedShortcut) {
-        AlertDialog.Builder(this)
+        MaterialAlertDialogBuilder(this)
             .setTitle(R.string.delete_shortcut_title)
             .setMessage(R.string.delete_shortcut_message)
             .setPositiveButton(R.string.delete) { _, _ ->

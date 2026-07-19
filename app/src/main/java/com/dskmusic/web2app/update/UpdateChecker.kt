@@ -8,7 +8,7 @@ import android.content.IntentFilter
 import android.net.Uri
 import android.os.Build
 import android.os.Environment
-import androidx.appcompat.app.AlertDialog
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import com.dskmusic.web2app.R
@@ -65,7 +65,7 @@ object UpdateChecker {
 
     /** Shared "update available" dialog, reused from both the main screen and Settings. */
     fun promptInstall(context: Context, info: UpdateInfo) {
-        AlertDialog.Builder(context)
+        MaterialAlertDialogBuilder(context)
             .setTitle(R.string.update_available_title)
             .setMessage(context.getString(R.string.update_available_message, info.versionName))
             .setPositiveButton(R.string.update_download_positive) { _, _ -> downloadAndInstall(context, info) }

@@ -43,17 +43,17 @@ object BitmapUtils {
     }
 
     /**
-     * Same as [compose], but shrinks [source] into the adaptive-icon "safe zone" (~66% of the
-     * canvas) before flattening. Android launchers crop the outer bleed of any bitmap passed to
-     * IconCompat.createWithAdaptiveBitmap, so without this inset a full-bleed image (or one with
-     * its own transparent padding) ends up looking zoomed in with the background ring cropped
-     * away. Used for both the on-screen preview and the actual generated icon so they match.
+     * Shrinks [source] into the adaptive-icon "safe zone" (~66% of the canvas) before flattening
+     * onto [bgColor]. Pinned shortcuts on Android 8+ always get reshaped/cropped into the
+     * launcher's adaptive icon mask, regardless of which IconCompat factory is used — without this
+     * inset, that crop eats into the actual image content. With it, the crop only eats into our
+     * own uniform background bleed, which is invisible. Used for both the preview and final icon.
      */
-    fun composeAdaptive(source: Bitmap, bgColor: Int?): Bitmap {
+    fun composeAdaptive(source: Bitmap, bgColor: Int): Bitmap {
         val size = maxOf(source.width, source.height)
         val result = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(result)
-        if (bgColor != null) canvas.drawColor(bgColor)
+        canvas.drawColor(bgColor)
         val contentSize = (size * SAFE_ZONE_RATIO).toInt()
         val offset = (size - contentSize) / 2
         val destRect = Rect(offset, offset, offset + contentSize, offset + contentSize)
@@ -62,17 +62,16 @@ object BitmapUtils {
     }
 
     /**
-     * Crops a [composeAdaptive] result down to just its safe-zone content, for on-screen preview.
-     * The full bled canvas is correct for IconCompat (the OS masks it down to this same region),
-     * but showing that full canvas directly in an ImageView looks like a small icon with a big
-     * background margin — the mask is what makes the real launcher icon fill its shape. Cropping
-     * here first makes the preview match what actually ends up on the home screen.
+     * Crops a [composeAdaptive] result down to just its safe-zone content, for on-screen preview,
+     * so the preview matches what actually ends up visible on the home screen after the OS masks it.
      */
     fun previewCrop(adaptive: Bitmap): Bitmap {
         val contentSize = (adaptive.width * SAFE_ZONE_RATIO).toInt()
         val offset = (adaptive.width - contentSize) / 2
         return Bitmap.createBitmap(adaptive, offset, offset, contentSize, contentSize)
     }
+
+    private const val SAFE_ZONE_RATIO = 0.66f
 
     /** Turns every pixel close enough to [keyColor] fully transparent (simple chroma-key). */
     fun makeColorTransparent(source: Bitmap, keyColor: Int, tolerance: Int = 40): Bitmap {
@@ -97,6 +96,4 @@ object BitmapUtils {
         result.setPixels(pixels, 0, w, 0, 0, w, h)
         return result
     }
-
-    private const val SAFE_ZONE_RATIO = 0.66f
 }
