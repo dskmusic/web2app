@@ -2,6 +2,7 @@ package com.dskmusic.web2app
 
 import android.graphics.BitmapFactory
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import android.widget.PopupMenu
 import androidx.recyclerview.widget.RecyclerView
@@ -11,8 +12,12 @@ class SavedShortcutAdapter(
     private val items: MutableList<SavedShortcut>,
     private val onEdit: (SavedShortcut) -> Unit,
     private val onRepin: (SavedShortcut) -> Unit,
-    private val onDelete: (SavedShortcut) -> Unit
+    private val onDelete: (SavedShortcut) -> Unit,
+    private val onSelectionChanged: (Int) -> Unit
 ) : RecyclerView.Adapter<SavedShortcutAdapter.ViewHolder>() {
+
+    private var selectionMode = false
+    private val selectedIds = mutableSetOf<String>()
 
     class ViewHolder(val binding: ItemSavedShortcutBinding) : RecyclerView.ViewHolder(binding.root)
 
@@ -37,6 +42,22 @@ class SavedShortcutAdapter(
             holder.binding.ivIcon.setImageResource(R.mipmap.ic_launcher)
         }
 
+        val selected = item.id in selectedIds
+        holder.binding.cbSelect.visibility = if (selectionMode) View.VISIBLE else View.GONE
+        holder.binding.cbSelect.isChecked = selected
+        holder.binding.btnMore.visibility = if (selectionMode) View.GONE else View.VISIBLE
+
+        holder.itemView.setOnClickListener {
+            if (selectionMode) toggleSelection(item.id) else onEdit(item)
+        }
+        holder.itemView.setOnLongClickListener {
+            if (!selectionMode) {
+                selectionMode = true
+                toggleSelection(item.id)
+            }
+            true
+        }
+
         holder.binding.btnMore.setOnClickListener { anchor ->
             PopupMenu(context, anchor).apply {
                 menuInflater.inflate(R.menu.menu_saved_shortcut_item, menu)
@@ -52,9 +73,28 @@ class SavedShortcutAdapter(
         }
     }
 
+    private fun toggleSelection(id: String) {
+        if (!selectedIds.add(id)) selectedIds.remove(id)
+        if (selectedIds.isEmpty()) selectionMode = false
+        notifyDataSetChanged()
+        onSelectionChanged(selectedIds.size)
+    }
+
+    fun isInSelectionMode(): Boolean = selectionMode
+
+    fun getSelectedIds(): List<String> = selectedIds.toList()
+
+    fun exitSelectionMode() {
+        selectionMode = false
+        selectedIds.clear()
+        notifyDataSetChanged()
+    }
+
     fun submitList(newItems: List<SavedShortcut>) {
         items.clear()
         items.addAll(newItems)
+        selectedIds.retainAll(newItems.map { it.id }.toSet())
+        if (selectedIds.isEmpty()) selectionMode = false
         notifyDataSetChanged()
     }
 }

@@ -58,6 +58,10 @@
     <string name="delete_shortcut_title">Eliminar acceso directo</string>
     <string name="delete_shortcut_message">Se eliminará de esta lista. Si el icono ya está anclado en la pantalla de inicio, tendrás que quitarlo manualmente (Android no permite hacerlo desde la app).</string>
     <string name="delete">Eliminar</string>
+    <string name="action_delete_selected">Eliminar seleccionados</string>
+    <string name="selected_count">%1$d seleccionados</string>
+    <string name="delete_selected_title">Eliminar accesos directos</string>
+    <string name="delete_selected_message">Se eliminarán %1$d accesos directos de esta lista. Si alguno ya está anclado en la pantalla de inicio, tendrás que quitarlo manualmente.</string>
     <string name="export_success">Copia de seguridad exportada</string>
     <string name="import_success">%1$d accesos directos importados</string>
     <string name="more_options">Más opciones</string>

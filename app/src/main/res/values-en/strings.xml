@@ -58,6 +58,10 @@
     <string name="delete_shortcut_title">Delete shortcut</string>
     <string name="delete_shortcut_message">This removes it from this list. If the icon is already pinned to your home screen, you\'ll need to remove it manually (Android does not let apps do that).</string>
     <string name="delete">Delete</string>
+    <string name="action_delete_selected">Delete selected</string>
+    <string name="selected_count">%1$d selected</string>
+    <string name="delete_selected_title">Delete shortcuts</string>
+    <string name="delete_selected_message">This removes %1$d shortcuts from this list. If any are already pinned to your home screen, you\'ll need to remove them manually.</string>
     <string name="export_success">Backup exported</string>
     <string name="import_success">%1$d shortcuts imported</string>
     <string name="more_options">More options</string>

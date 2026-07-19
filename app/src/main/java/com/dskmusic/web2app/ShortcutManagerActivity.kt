@@ -7,6 +7,7 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import androidx.core.content.pm.ShortcutInfoCompat
@@ -44,13 +45,25 @@ class ShortcutManagerActivity : BaseActivity() {
         setSupportActionBar(binding.toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
-        adapter = SavedShortcutAdapter(mutableListOf(), ::onEdit, ::onRepin, ::onDelete)
+        adapter = SavedShortcutAdapter(mutableListOf(), ::onEdit, ::onRepin, ::onDelete, ::onSelectionChanged)
         binding.recyclerView.layoutManager = LinearLayoutManager(this)
         binding.recyclerView.adapter = adapter
+
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                if (adapter.isInSelectionMode()) {
+                    adapter.exitSelectionMode()
+                    onSelectionChanged(0)
+                } else {
+                    isEnabled = false
+                    onBackPressedDispatcher.onBackPressed()
+                }
+            }
+        })
     }
 
     override fun onSupportNavigateUp(): Boolean {
-        finish()
+        onBackPressedDispatcher.onBackPressed()
         return true
     }
 
@@ -64,12 +77,42 @@ class ShortcutManagerActivity : BaseActivity() {
         return true
     }
 
+    override fun onPrepareOptionsMenu(menu: Menu): Boolean {
+        val selecting = adapter.isInSelectionMode()
+        menu.findItem(R.id.action_delete_selected).isVisible = selecting
+        menu.findItem(R.id.action_export).isVisible = !selecting
+        menu.findItem(R.id.action_import).isVisible = !selecting
+        return super.onPrepareOptionsMenu(menu)
+    }
+
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             R.id.action_export -> { exportLauncher.launch("web2app_shortcuts.json"); true }
             R.id.action_import -> { importLauncher.launch(arrayOf("application/json")); true }
+            R.id.action_delete_selected -> { confirmDeleteSelected(); true }
             else -> super.onOptionsItemSelected(item)
         }
+    }
+
+    private fun onSelectionChanged(count: Int) {
+        binding.toolbar.title = if (count > 0) getString(R.string.selected_count, count) else getString(R.string.shortcuts_manager_title)
+        invalidateOptionsMenu()
+    }
+
+    private fun confirmDeleteSelected() {
+        val ids = adapter.getSelectedIds()
+        if (ids.isEmpty()) return
+        MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.delete_selected_title)
+            .setMessage(getString(R.string.delete_selected_message, ids.size))
+            .setPositiveButton(R.string.delete) { _, _ ->
+                ids.forEach { ShortcutStore.remove(this, it) }
+                adapter.exitSelectionMode()
+                onSelectionChanged(0)
+                refreshList()
+            }
+            .setNegativeButton(R.string.cancel, null)
+            .show()
     }
 
     private fun refreshList() {
