@@ -1,9 +1,11 @@
 package com.dskmusic.web2app
 
+import android.app.Dialog
 import android.content.pm.ActivityInfo
 import android.content.res.Configuration
 import android.os.Build
 import android.os.Bundle
+import android.os.Message
 import android.webkit.CookieManager
 import android.webkit.WebChromeClient
 import android.webkit.WebStorage
@@ -19,6 +21,7 @@ class WebViewActivity : BaseActivity() {
 
     private lateinit var binding: ActivityWebviewBinding
     private var incognito = false
+    private var popupDialog: Dialog? = null
 
     override fun useNoActionBar(): Boolean = true
 
@@ -42,7 +45,7 @@ class WebViewActivity : BaseActivity() {
         binding.webView.settings.javaScriptEnabled = true
         binding.webView.settings.domStorageEnabled = true
         binding.webView.webViewClient = WebViewClient()
-        binding.webView.webChromeClient = WebChromeClient()
+        setupPopupSupport()
         hideWebViewUserAgentMarker()
         applyForcedTheme()
         applyDesktopMode()
@@ -65,8 +68,44 @@ class WebViewActivity : BaseActivity() {
     }
 
     override fun onDestroy() {
+        popupDialog?.dismiss()
         if (incognito) clearBrowsingData()
         super.onDestroy()
+    }
+
+    /**
+     * A plain WebView can't open real popup windows (window.open()), which OAuth flows like
+     * "Sign in with Google" rely on — without this the click silently does nothing and the page
+     * is left blank once the (never-shown) popup would have redirected back. This creates a real
+     * WebView for the popup, shown in a floating dialog, that closes itself once the flow calls
+     * window.close() (or navigates away, which the dialog's own back/dismiss then handles).
+     */
+    private fun setupPopupSupport() {
+        binding.webView.settings.setSupportMultipleWindows(true)
+        binding.webView.settings.javaScriptCanOpenWindowsAutomatically = true
+        binding.webView.webChromeClient = object : WebChromeClient() {
+            override fun onCreateWindow(view: WebView, isDialog: Boolean, isUserGesture: Boolean, resultMsg: Message): Boolean {
+                val popupWebView = WebView(this@WebViewActivity).apply {
+                    settings.javaScriptEnabled = true
+                    settings.domStorageEnabled = true
+                    webViewClient = WebViewClient()
+                }
+                popupDialog?.dismiss()
+                popupDialog = Dialog(this@WebViewActivity).apply {
+                    setContentView(popupWebView)
+                    setOnDismissListener { popupWebView.destroy() }
+                    show()
+                }
+                (resultMsg.obj as WebView.WebViewTransport).webView = popupWebView
+                resultMsg.sendToTarget()
+                return true
+            }
+
+            override fun onCloseWindow(window: WebView) {
+                popupDialog?.dismiss()
+                popupDialog = null
+            }
+        }
     }
 
     private fun confirmExit() {
