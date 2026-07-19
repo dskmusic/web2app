@@ -31,7 +31,9 @@ class SavedShortcutAdapter(
         val context = holder.binding.root.context
         val iconFile = ShortcutStore.iconFile(context, item.id)
         if (iconFile.exists()) {
-            holder.binding.ivIcon.setImageBitmap(BitmapFactory.decodeFile(iconFile.absolutePath))
+            val icon = BitmapFactory.decodeFile(iconFile.absolutePath)
+            val display = if (item.backgroundColor != null) BitmapUtils.previewCrop(icon) else icon
+            holder.binding.ivIcon.setImageBitmap(display)
         } else {
             holder.binding.ivIcon.setImageResource(R.mipmap.ic_launcher)
         }

@@ -30,6 +30,9 @@
     <string name="bg_color_green">Green</string>
     <string name="bg_color_purple">Purple</string>
     <string name="bg_color_custom">Custom…</string>
+    <string name="bg_color_pick_transparent">Pick a color to make transparent…</string>
+    <string name="bg_pick_transparent_instructions">Tap the image to pick the color that will become transparent</string>
+    <string name="bg_pick_transparent_no_image">Select an image first</string>
 
     <string name="shortcut_options_title">Shortcut options</string>
     <string name="shortcut_theme_label">Open the site in mode</string>

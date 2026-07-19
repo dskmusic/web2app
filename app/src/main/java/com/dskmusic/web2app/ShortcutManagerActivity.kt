@@ -91,7 +91,8 @@ class ShortcutManagerActivity : BaseActivity() {
         }
         val iconFile = ShortcutStore.iconFile(this, item.id)
         val icon = if (iconFile.exists()) {
-            IconCompat.createWithAdaptiveBitmap(BitmapFactory.decodeFile(iconFile.absolutePath))
+            val bitmap = BitmapFactory.decodeFile(iconFile.absolutePath)
+            if (item.backgroundColor != null) IconCompat.createWithAdaptiveBitmap(bitmap) else IconCompat.createWithBitmap(bitmap)
         } else {
             IconCompat.createWithResource(this, R.mipmap.ic_launcher)
         }

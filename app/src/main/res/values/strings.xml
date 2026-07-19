@@ -30,6 +30,9 @@
     <string name="bg_color_green">Verde</string>
     <string name="bg_color_purple">Morado</string>
     <string name="bg_color_custom">Personalizado…</string>
+    <string name="bg_color_pick_transparent">Elegir color a hacer transparente…</string>
+    <string name="bg_pick_transparent_instructions">Toca la imagen para elegir el color que se hará transparente</string>
+    <string name="bg_pick_transparent_no_image">Selecciona primero una imagen</string>
 
     <string name="shortcut_options_title">Opciones del acceso directo</string>
     <string name="shortcut_theme_label">Abrir la web en modo</string>

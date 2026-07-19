@@ -11,6 +11,7 @@ import android.os.Build
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
+import android.view.MotionEvent
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
@@ -33,6 +34,7 @@ class MainActivity : BaseActivity() {
 
     private lateinit var binding: ActivityMainBinding
     private var croppedBitmap: Bitmap? = null
+    private var rawImageUri: Uri? = null
     private var backgroundColor: Int? = null
     private var pendingCameraUri: Uri? = null
     private var editingId: String? = null
@@ -92,6 +94,10 @@ class MainActivity : BaseActivity() {
 
         binding.btnSelectImage.setOnClickListener { showImageSourceDialog() }
         binding.btnBackgroundColor.setOnClickListener { showBackgroundColorDialog() }
+        binding.ivPreview.setOnClickListener {
+            val source = rawImageUri ?: croppedBitmap?.let { cacheBitmapAsUri(it) }
+            source?.let { startCrop(it) } ?: showImageSourceDialog()
+        }
         binding.btnGenerate.setOnClickListener { generateShortcut() }
 
         applyDefaultShortcutOptions()
@@ -188,6 +194,7 @@ class MainActivity : BaseActivity() {
             val iconUrl = FaviconFetcher.find(url) ?: return@launch
             val bitmap = BitmapUtils.download(iconUrl) ?: return@launch
             if (croppedBitmap == null) {
+                rawImageUri = cacheBitmapAsUri(bitmap)
                 croppedBitmap = BitmapUtils.cropToSquare(bitmap)
                 refreshPreview()
             }
@@ -278,6 +285,7 @@ class MainActivity : BaseActivity() {
     }
 
     private fun startCrop(sourceUri: Uri) {
+        rawImageUri = sourceUri
         val imagesDir = File(cacheDir, "images").apply { mkdirs() }
         val destFile = File(imagesDir, "cropped_${System.currentTimeMillis()}.png")
         val destUri = FileProvider.getUriForFile(this, "$packageName.fileprovider", destFile)
@@ -310,6 +318,7 @@ class MainActivity : BaseActivity() {
     private fun showBackgroundColorDialog() {
         val names = arrayOf(
             getString(R.string.bg_color_transparent),
+            getString(R.string.bg_color_pick_transparent),
             getString(R.string.bg_color_white),
             getString(R.string.bg_color_black),
             getString(R.string.bg_color_blue),
@@ -317,7 +326,9 @@ class MainActivity : BaseActivity() {
             getString(R.string.bg_color_purple),
             getString(R.string.bg_color_custom)
         )
+        // null = either "transparent" (index 0) or an action row that doesn't set a plain color directly.
         val values = arrayOf(
+            null,
             null,
             Color.WHITE,
             Color.BLACK,
@@ -326,16 +337,62 @@ class MainActivity : BaseActivity() {
             ContextCompat.getColor(this, R.color.purple_500),
             null
         )
-        AlertDialog.Builder(this)
+        val presetIndex = values.indexOfFirst { it != null && it == backgroundColor }
+        val checkedIndex = if (backgroundColor == null) 0 else if (presetIndex >= 0) presetIndex else values.lastIndex
+
+        lateinit var dialog: AlertDialog
+        dialog = AlertDialog.Builder(this)
             .setTitle(R.string.background_color_title)
-            .setItems(names) { _, which ->
-                if (which == values.lastIndex) {
-                    showCustomColorDialog()
-                } else {
-                    backgroundColor = values[which]
-                    refreshPreview()
+            .setSingleChoiceItems(names, checkedIndex) { _, which ->
+                dialog.dismiss()
+                when (which) {
+                    1 -> showPickTransparentColorDialog()
+                    values.lastIndex -> showCustomColorDialog()
+                    else -> {
+                        backgroundColor = values[which]
+                        refreshPreview()
+                    }
                 }
             }
+            .setNegativeButton(R.string.cancel, null)
+            .show()
+    }
+
+    private fun showPickTransparentColorDialog() {
+        val src = croppedBitmap
+        if (src == null) {
+            showToast(R.string.bg_pick_transparent_no_image)
+            return
+        }
+        val dialogBinding = com.dskmusic.web2app.databinding.DialogPickTransparentColorBinding.inflate(layoutInflater)
+        dialogBinding.ivEyedropper.setImageBitmap(src)
+        var pickedColor = src.getPixel(0, 0)
+
+        fun updateSwatch(color: Int) {
+            pickedColor = color
+            dialogBinding.vColorSwatch.setBackgroundColor(color)
+            dialogBinding.tvColorHex.text = String.format("#%06X", color and 0xFFFFFF)
+        }
+        updateSwatch(pickedColor)
+
+        dialogBinding.ivEyedropper.setOnTouchListener { view, event ->
+            if (event.action == MotionEvent.ACTION_DOWN || event.action == MotionEvent.ACTION_MOVE) {
+                val x = (event.x / view.width * src.width).toInt().coerceIn(0, src.width - 1)
+                val y = (event.y / view.height * src.height).toInt().coerceIn(0, src.height - 1)
+                updateSwatch(src.getPixel(x, y))
+            }
+            true
+        }
+
+        AlertDialog.Builder(this)
+            .setTitle(R.string.bg_color_pick_transparent)
+            .setView(dialogBinding.root)
+            .setPositiveButton(android.R.string.ok) { _, _ ->
+                croppedBitmap = BitmapUtils.makeColorTransparent(src, pickedColor)
+                backgroundColor = null
+                refreshPreview()
+            }
+            .setNegativeButton(R.string.cancel, null)
             .show()
     }
 
@@ -406,9 +463,19 @@ class MainActivity : BaseActivity() {
             .show()
     }
 
+    /**
+     * A solid background gets composited into the adaptive-icon safe zone (needs
+     * IconCompat.createWithAdaptiveBitmap so the launcher masks/crops it correctly). A
+     * transparent background is kept as a plain flat bitmap with real alpha instead — the
+     * adaptive path forces an opaque backdrop behind any transparent pixels on most launchers.
+     */
+    private fun buildFinalIcon(src: Bitmap): Bitmap =
+        if (backgroundColor != null) BitmapUtils.composeAdaptive(src, backgroundColor) else BitmapUtils.compose(src, null)
+
     private fun refreshPreview() {
         val src = croppedBitmap ?: return
-        binding.ivPreview.setImageBitmap(BitmapUtils.composeAdaptive(src, backgroundColor))
+        val bitmap = buildFinalIcon(src)
+        binding.ivPreview.setImageBitmap(if (backgroundColor != null) BitmapUtils.previewCrop(bitmap) else bitmap)
     }
 
     private fun generateShortcut() {
@@ -432,9 +499,10 @@ class MainActivity : BaseActivity() {
         val url = if (rawUrl.startsWith("http://") || rawUrl.startsWith("https://")) rawUrl else "https://$rawUrl"
         val id = editingId ?: "shortcut_${System.currentTimeMillis()}"
 
-        val finalIconBitmap = croppedBitmap?.let { BitmapUtils.composeAdaptive(it, backgroundColor) }
-        val icon = finalIconBitmap?.let { IconCompat.createWithAdaptiveBitmap(it) }
-            ?: IconCompat.createWithResource(this, R.mipmap.ic_launcher)
+        val finalIconBitmap = croppedBitmap?.let { buildFinalIcon(it) }
+        val icon = finalIconBitmap?.let {
+            if (backgroundColor != null) IconCompat.createWithAdaptiveBitmap(it) else IconCompat.createWithBitmap(it)
+        } ?: IconCompat.createWithResource(this, R.mipmap.ic_launcher)
 
         val forcedTheme = when (binding.rgShortcutTheme.checkedRadioButtonId) {
             R.id.rbShortcutLight -> WebViewActivity.THEME_LIGHT
@@ -485,6 +553,7 @@ class MainActivity : BaseActivity() {
     private fun resetForm() {
         editingId = null
         croppedBitmap = null
+        rawImageUri = null
         backgroundColor = null
         binding.etUrl.text = null
         binding.etName.text = null
