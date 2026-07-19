@@ -45,6 +45,8 @@ class WebViewActivity : BaseActivity() {
         binding.webView.webChromeClient = WebChromeClient()
         applyForcedTheme()
         applyDesktopMode()
+        applyZoom()
+        applySelectionLock()
 
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
@@ -108,6 +110,26 @@ class WebViewActivity : BaseActivity() {
         binding.webView.settings.displayZoomControls = false
     }
 
+    private fun applyZoom() {
+        val allowZoom = intent.getBooleanExtra(EXTRA_ALLOW_ZOOM, false)
+        binding.webView.settings.setSupportZoom(allowZoom)
+        binding.webView.settings.builtInZoomControls = allowZoom
+        binding.webView.settings.displayZoomControls = false
+    }
+
+    /**
+     * When off (default), long-pressing swallows the event everywhere except on actual text
+     * fields (via HitTestResult.EDIT_TEXT_TYPE), so pages don't pop up text/image selection or
+     * a context menu on a long press, while copy/paste inside inputs keeps working normally.
+     */
+    private fun applySelectionLock() {
+        val allowSelection = intent.getBooleanExtra(EXTRA_ALLOW_SELECTION, false)
+        if (allowSelection) return
+        binding.webView.setOnLongClickListener {
+            binding.webView.hitTestResult.type != WebView.HitTestResult.EDIT_TEXT_TYPE
+        }
+    }
+
     private fun applyForcedTheme() {
         if (!WebViewFeature.isFeatureSupported(WebViewFeature.ALGORITHMIC_DARKENING)) return
         val forced = intent.getStringExtra(EXTRA_FORCE_THEME) ?: THEME_SYSTEM
@@ -126,6 +148,8 @@ class WebViewActivity : BaseActivity() {
         const val EXTRA_ALLOW_ROTATION = "extra_allow_rotation"
         const val EXTRA_DESKTOP_MODE = "extra_desktop_mode"
         const val EXTRA_INCOGNITO = "extra_incognito"
+        const val EXTRA_ALLOW_ZOOM = "extra_allow_zoom"
+        const val EXTRA_ALLOW_SELECTION = "extra_allow_selection"
         const val THEME_SYSTEM = "system"
         const val THEME_LIGHT = "light"
         const val THEME_DARK = "dark"

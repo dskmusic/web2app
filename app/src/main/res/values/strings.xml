@@ -36,9 +36,11 @@
 
     <string name="shortcut_options_title">Opciones del acceso directo</string>
     <string name="shortcut_theme_label">Abrir la web en modo</string>
-    <string name="allow_rotation_label">Permitir rotación de pantalla</string>
+    <string name="allow_rotation_label">Rotar pantalla</string>
     <string name="desktop_mode_label">Modo escritorio</string>
     <string name="incognito_mode_label">Modo incógnito</string>
+    <string name="allow_zoom_label">Zoom (2 dedos)</string>
+    <string name="allow_selection_label">Seleccionar</string>
     <string name="update_shortcut">Actualizar acceso directo</string>
     <string name="shortcut_updated">Acceso directo actualizado</string>
 

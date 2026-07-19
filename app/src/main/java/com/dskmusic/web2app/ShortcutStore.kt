@@ -56,6 +56,8 @@ object ShortcutStore {
         put("allowRotation", s.allowRotation)
         put("desktopMode", s.desktopMode)
         put("incognito", s.incognito)
+        put("allowZoom", s.allowZoom)
+        put("allowSelection", s.allowSelection)
         put("createdAt", s.createdAt)
     }
 
@@ -68,6 +70,8 @@ object ShortcutStore {
         allowRotation = o.optBoolean("allowRotation", true),
         desktopMode = o.optBoolean("desktopMode", false),
         incognito = o.optBoolean("incognito", false),
+        allowZoom = o.optBoolean("allowZoom", false),
+        allowSelection = o.optBoolean("allowSelection", false),
         createdAt = o.optLong("createdAt", System.currentTimeMillis())
     )
 
@@ -87,6 +91,8 @@ object ShortcutStore {
             put("defaultAllowRotation", Prefs.getDefaultAllowRotation(context))
             put("defaultDesktopMode", Prefs.getDefaultDesktopMode(context))
             put("defaultIncognito", Prefs.getDefaultIncognito(context))
+            put("defaultAllowZoom", Prefs.getDefaultAllowZoom(context))
+            put("defaultAllowSelection", Prefs.getDefaultAllowSelection(context))
         }
         val root = JSONObject().apply {
             put("settings", settings)
@@ -118,7 +124,9 @@ object ShortcutStore {
                     settings.optString("defaultShortcutTheme", Prefs.getDefaultShortcutTheme(context)),
                     settings.optBoolean("defaultAllowRotation", Prefs.getDefaultAllowRotation(context)),
                     settings.optBoolean("defaultDesktopMode", Prefs.getDefaultDesktopMode(context)),
-                    settings.optBoolean("defaultIncognito", Prefs.getDefaultIncognito(context))
+                    settings.optBoolean("defaultIncognito", Prefs.getDefaultIncognito(context)),
+                    settings.optBoolean("defaultAllowZoom", Prefs.getDefaultAllowZoom(context)),
+                    settings.optBoolean("defaultAllowSelection", Prefs.getDefaultAllowSelection(context))
                 )
             }
         }

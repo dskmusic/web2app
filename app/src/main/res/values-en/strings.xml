@@ -36,9 +36,11 @@
 
     <string name="shortcut_options_title">Shortcut options</string>
     <string name="shortcut_theme_label">Open the site in mode</string>
-    <string name="allow_rotation_label">Allow screen rotation</string>
+    <string name="allow_rotation_label">Rotate screen</string>
     <string name="desktop_mode_label">Desktop mode</string>
     <string name="incognito_mode_label">Incognito mode</string>
+    <string name="allow_zoom_label">Pinch zoom</string>
+    <string name="allow_selection_label">Selection</string>
     <string name="update_shortcut">Update shortcut</string>
     <string name="shortcut_updated">Shortcut updated</string>
 

@@ -5,6 +5,16 @@
         <item name="cornerSize">24dp</item>
     </style>
 
+    <!--
+        Dialog buttons default to colorPrimary, which some of our theme accents don't contrast
+        well against colorSurface (e.g. dark themes with a muted accent). Forcing colorOnSurface
+        here guarantees legible button text, matching the title/message color, at the cost of the
+        buttons no longer being accent-colored inside dialogs specifically.
+    -->
+    <style name="ThemeOverlay.Web2App.AlertDialog" parent="ThemeOverlay.Material3.MaterialAlertDialog">
+        <item name="colorPrimary">?attr/colorOnSurface</item>
+    </style>
+
     <style name="Theme.Web2App" parent="Theme.Material3.DayNight">
         <item name="colorPrimary">@color/purple_500</item>
         <item name="colorPrimaryVariant">@color/purple_700</item>
@@ -13,6 +23,7 @@
         <item name="colorSecondaryVariant">@color/teal_200</item>
         <item name="colorOnSecondary">@color/black</item>
         <item name="android:statusBarColor" tools:targetApi="l">@color/purple_700</item>
+        <item name="materialAlertDialogTheme">@style/ThemeOverlay.Web2App.AlertDialog</item>
         <item name="android:fontFamily">sans-serif-condensed</item>
         <item name="fontFamily">sans-serif-condensed</item>
     </style>
@@ -30,6 +41,7 @@
         <item name="colorSecondaryVariant">@color/blue_200</item>
         <item name="colorOnSecondary">@color/black</item>
         <item name="android:statusBarColor" tools:targetApi="l">@color/blue_700</item>
+        <item name="materialAlertDialogTheme">@style/ThemeOverlay.Web2App.AlertDialog</item>
         <item name="android:fontFamily">sans-serif-condensed</item>
         <item name="fontFamily">sans-serif-condensed</item>
     </style>
@@ -47,6 +59,7 @@
         <item name="colorSecondaryVariant">@color/green_200</item>
         <item name="colorOnSecondary">@color/black</item>
         <item name="android:statusBarColor" tools:targetApi="l">@color/green_700</item>
+        <item name="materialAlertDialogTheme">@style/ThemeOverlay.Web2App.AlertDialog</item>
         <item name="android:fontFamily">sans-serif-condensed</item>
         <item name="fontFamily">sans-serif-condensed</item>
     </style>
@@ -64,6 +77,7 @@
         <item name="colorSecondaryVariant">@color/blue_200</item>
         <item name="colorOnSecondary">@color/black</item>
         <item name="android:statusBarColor" tools:targetApi="l">@color/navy_primary_dark</item>
+        <item name="materialAlertDialogTheme">@style/ThemeOverlay.Web2App.AlertDialog</item>
         <item name="android:fontFamily">sans-serif-condensed</item>
         <item name="fontFamily">sans-serif-condensed</item>
     </style>
@@ -81,6 +95,7 @@
         <item name="colorSecondaryVariant">@color/green_200</item>
         <item name="colorOnSecondary">@color/black</item>
         <item name="android:statusBarColor" tools:targetApi="l">@color/forest_primary_dark</item>
+        <item name="materialAlertDialogTheme">@style/ThemeOverlay.Web2App.AlertDialog</item>
         <item name="android:fontFamily">sans-serif-condensed</item>
         <item name="fontFamily">sans-serif-condensed</item>
     </style>
@@ -100,6 +115,7 @@
         <item name="android:colorBackground">@color/black</item>
         <item name="colorSurface">@color/black</item>
         <item name="android:statusBarColor" tools:targetApi="l">@color/black</item>
+        <item name="materialAlertDialogTheme">@style/ThemeOverlay.Web2App.AlertDialog</item>
         <item name="android:fontFamily">sans-serif-condensed</item>
         <item name="fontFamily">sans-serif-condensed</item>
     </style>

@@ -42,6 +42,16 @@ class MainActivity : BaseActivity() {
 
     override fun useNoActionBar(): Boolean = true
 
+    /** Swiping in from either screen edge opens the shortcut manager, like a hidden edge drawer. */
+    private val edgeSwipeGestureDetector by lazy {
+        edgeSwipeDetector { startActivity(Intent(this, ShortcutManagerActivity::class.java)) }
+    }
+
+    override fun dispatchTouchEvent(ev: MotionEvent): Boolean {
+        edgeSwipeGestureDetector.onTouchEvent(ev)
+        return super.dispatchTouchEvent(ev)
+    }
+
     private val getContentLauncher = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
         uri?.let { startCrop(it) }
     }
@@ -86,9 +96,6 @@ class MainActivity : BaseActivity() {
         binding.etUrl.hideKeyboardOnImeAction()
         binding.etName.hideKeyboardOnImeAction()
 
-        // ponytail: swallow touch scrolling so the main screen never moves, even if content overflows
-        binding.scrollMain.setOnTouchListener { _, _ -> true }
-
         binding.etUrl.setOnFocusChangeListener { _, hasFocus ->
             if (!hasFocus) tryAutoFavicon(binding.etUrl.text?.toString()?.trim().orEmpty())
         }
@@ -132,6 +139,8 @@ class MainActivity : BaseActivity() {
         binding.swAllowRotation.isChecked = Prefs.getDefaultAllowRotation(this)
         binding.swDesktopMode.isChecked = Prefs.getDefaultDesktopMode(this)
         binding.swIncognito.isChecked = Prefs.getDefaultIncognito(this)
+        binding.swAllowZoom.isChecked = Prefs.getDefaultAllowZoom(this)
+        binding.swAllowSelection.isChecked = Prefs.getDefaultAllowSelection(this)
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -177,6 +186,8 @@ class MainActivity : BaseActivity() {
         binding.swAllowRotation.isChecked = saved.allowRotation
         binding.swDesktopMode.isChecked = saved.desktopMode
         binding.swIncognito.isChecked = saved.incognito
+        binding.swAllowZoom.isChecked = saved.allowZoom
+        binding.swAllowSelection.isChecked = saved.allowSelection
     }
 
     private fun handleShareIntent() {
@@ -510,7 +521,9 @@ class MainActivity : BaseActivity() {
         val allowRotation = binding.swAllowRotation.isChecked
         val desktopMode = binding.swDesktopMode.isChecked
         val incognito = binding.swIncognito.isChecked
-        Prefs.setDefaultShortcutOptions(this, forcedTheme, allowRotation, desktopMode, incognito)
+        val allowZoom = binding.swAllowZoom.isChecked
+        val allowSelection = binding.swAllowSelection.isChecked
+        Prefs.setDefaultShortcutOptions(this, forcedTheme, allowRotation, desktopMode, incognito, allowZoom, allowSelection)
 
         val intent = Intent(this, WebViewActivity::class.java).apply {
             action = Intent.ACTION_VIEW
@@ -520,6 +533,8 @@ class MainActivity : BaseActivity() {
             putExtra(WebViewActivity.EXTRA_ALLOW_ROTATION, allowRotation)
             putExtra(WebViewActivity.EXTRA_DESKTOP_MODE, desktopMode)
             putExtra(WebViewActivity.EXTRA_INCOGNITO, incognito)
+            putExtra(WebViewActivity.EXTRA_ALLOW_ZOOM, allowZoom)
+            putExtra(WebViewActivity.EXTRA_ALLOW_SELECTION, allowSelection)
         }
 
         val shortcutInfo = ShortcutInfoCompat.Builder(this, id)
@@ -529,7 +544,7 @@ class MainActivity : BaseActivity() {
             .setIntent(intent)
             .build()
 
-        persistShortcutRecord(id, name, url, forcedTheme, allowRotation, desktopMode, incognito, finalIconBitmap)
+        persistShortcutRecord(id, name, url, forcedTheme, allowRotation, desktopMode, incognito, allowZoom, allowSelection, finalIconBitmap)
 
         if (editingId != null) {
             ShortcutManagerCompat.updateShortcuts(this, listOf(shortcutInfo))
@@ -568,6 +583,8 @@ class MainActivity : BaseActivity() {
         allowRotation: Boolean,
         desktopMode: Boolean,
         incognito: Boolean,
+        allowZoom: Boolean,
+        allowSelection: Boolean,
         finalIcon: Bitmap?
     ) {
         croppedBitmap?.let { raw ->
@@ -587,6 +604,8 @@ class MainActivity : BaseActivity() {
                 allowRotation = allowRotation,
                 desktopMode = desktopMode,
                 incognito = incognito,
+                allowZoom = allowZoom,
+                allowSelection = allowSelection,
                 createdAt = System.currentTimeMillis()
             )
         )

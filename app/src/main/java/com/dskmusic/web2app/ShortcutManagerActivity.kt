@@ -5,6 +5,7 @@ import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
+import android.view.MotionEvent
 import android.view.View
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
@@ -22,6 +23,16 @@ class ShortcutManagerActivity : BaseActivity() {
     private lateinit var adapter: SavedShortcutAdapter
 
     override fun useNoActionBar(): Boolean = true
+
+    /** Swiping in from either screen edge closes this screen, symmetric with opening it from MainActivity. */
+    private val edgeSwipeGestureDetector by lazy {
+        edgeSwipeDetector { onBackPressedDispatcher.onBackPressed() }
+    }
+
+    override fun dispatchTouchEvent(ev: MotionEvent): Boolean {
+        edgeSwipeGestureDetector.onTouchEvent(ev)
+        return super.dispatchTouchEvent(ev)
+    }
 
     private val exportLauncher = registerForActivityResult(ActivityResultContracts.CreateDocument("application/json")) { uri ->
         if (uri != null) {
@@ -146,6 +157,8 @@ class ShortcutManagerActivity : BaseActivity() {
             putExtra(WebViewActivity.EXTRA_ALLOW_ROTATION, item.allowRotation)
             putExtra(WebViewActivity.EXTRA_DESKTOP_MODE, item.desktopMode)
             putExtra(WebViewActivity.EXTRA_INCOGNITO, item.incognito)
+            putExtra(WebViewActivity.EXTRA_ALLOW_ZOOM, item.allowZoom)
+            putExtra(WebViewActivity.EXTRA_ALLOW_SELECTION, item.allowSelection)
         }
         val shortcutInfo = ShortcutInfoCompat.Builder(this, item.id)
             .setShortLabel(item.name)

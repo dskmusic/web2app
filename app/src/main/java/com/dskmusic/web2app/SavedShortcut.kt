@@ -9,5 +9,7 @@ data class SavedShortcut(
     val allowRotation: Boolean,
     val desktopMode: Boolean,
     val incognito: Boolean,
+    val allowZoom: Boolean,
+    val allowSelection: Boolean,
     val createdAt: Long
 )

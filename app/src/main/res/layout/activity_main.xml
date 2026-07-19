@@ -198,29 +198,79 @@
                             android:text="@string/theme_dark" />
                     </RadioGroup>
 
-                    <com.google.android.material.materialswitch.MaterialSwitch
-                        android:id="@+id/swAllowRotation"
+                    <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:checked="true"
-                        android:text="@string/allow_rotation_label" />
+                        android:layout_marginTop="6dp"
+                        android:orientation="horizontal">
 
-                    <com.google.android.material.materialswitch.MaterialSwitch
-                        android:id="@+id/swDesktopMode"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:checked="false"
-                        android:text="@string/desktop_mode_label" />
+                        <com.google.android.material.materialswitch.MaterialSwitch
+                            android:id="@+id/swAllowRotation"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:checked="false"
+                            android:textSize="13sp"
+                            android:text="@string/allow_rotation_label" />
 
-                    <com.google.android.material.materialswitch.MaterialSwitch
-                        android:id="@+id/swIncognito"
+                        <com.google.android.material.materialswitch.MaterialSwitch
+                            android:id="@+id/swDesktopMode"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:layout_marginStart="20dp"
+                            android:checked="false"
+                            android:textSize="13sp"
+                            android:text="@string/desktop_mode_label" />
+                    </LinearLayout>
+
+                    <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:checked="false"
-                        android:text="@string/incognito_mode_label" />
+                        android:layout_marginTop="2dp"
+                        android:orientation="horizontal">
+
+                        <com.google.android.material.materialswitch.MaterialSwitch
+                            android:id="@+id/swIncognito"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:checked="false"
+                            android:textSize="13sp"
+                            android:text="@string/incognito_mode_label" />
+
+                        <com.google.android.material.materialswitch.MaterialSwitch
+                            android:id="@+id/swAllowZoom"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:layout_marginStart="20dp"
+                            android:checked="false"
+                            android:textSize="13sp"
+                            android:text="@string/allow_zoom_label" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:orientation="horizontal">
+
+                        <com.google.android.material.materialswitch.MaterialSwitch
+                            android:id="@+id/swAllowSelection"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:checked="false"
+                            android:textSize="13sp"
+                            android:text="@string/allow_selection_label" />
+
+                        <View
+                            android:layout_width="0dp"
+                            android:layout_height="0dp"
+                            android:layout_weight="1"
+                            android:layout_marginStart="20dp" />
+                    </LinearLayout>
 
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
