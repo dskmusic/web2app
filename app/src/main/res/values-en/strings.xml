@@ -104,6 +104,10 @@
     <string name="update_none">You already have the latest version</string>
     <string name="update_check_error">Couldn\'t check for updates</string>
 
+    <string name="download_started">Downloading…</string>
+    <string name="download_error">Couldn\'t start the download</string>
+    <string name="download_permission_needed">Grant the storage permission and try again</string>
+
     <string name="pixabay_title">Search image</string>
     <string name="pixabay_search_hint">Search images…</string>
     <string name="search">Search</string>

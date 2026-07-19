@@ -1,17 +1,26 @@
 package com.dskmusic.web2app
 
+import android.Manifest
 import android.app.Dialog
+import android.app.DownloadManager
 import android.content.pm.ActivityInfo
+import android.content.pm.PackageManager
 import android.content.res.Configuration
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.Environment
 import android.os.Message
 import android.webkit.CookieManager
+import android.webkit.URLUtil
 import android.webkit.WebChromeClient
 import android.webkit.WebStorage
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContextCompat
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import androidx.webkit.WebSettingsCompat
 import androidx.webkit.WebViewFeature
@@ -22,6 +31,10 @@ class WebViewActivity : BaseActivity() {
     private lateinit var binding: ActivityWebviewBinding
     private var incognito = false
     private var popupDialog: Dialog? = null
+
+    private val storagePermissionLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+        if (!granted) Toast.makeText(this, R.string.download_permission_needed, Toast.LENGTH_SHORT).show()
+    }
 
     override fun useNoActionBar(): Boolean = true
 
@@ -46,6 +59,7 @@ class WebViewActivity : BaseActivity() {
         binding.webView.settings.domStorageEnabled = true
         binding.webView.webViewClient = WebViewClient()
         setupPopupSupport()
+        setupDownloads()
         hideWebViewUserAgentMarker()
         applyForcedTheme()
         applyDesktopMode()
@@ -105,6 +119,33 @@ class WebViewActivity : BaseActivity() {
             override fun onCloseWindow(window: WebView) {
                 popupDialog?.dismiss()
                 popupDialog = null
+            }
+        }
+    }
+
+    /** WebView doesn't download anything on its own; DownloadManager does the actual fetching. */
+    private fun setupDownloads() {
+        binding.webView.setDownloadListener { url, userAgent, contentDisposition, mimeType, _ ->
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q &&
+                ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED
+            ) {
+                storagePermissionLauncher.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                return@setDownloadListener
+            }
+            runCatching {
+                val fileName = URLUtil.guessFileName(url, contentDisposition, mimeType)
+                val request = DownloadManager.Request(Uri.parse(url)).apply {
+                    setMimeType(mimeType)
+                    addRequestHeader("User-Agent", userAgent)
+                    addRequestHeader("cookie", CookieManager.getInstance().getCookie(url))
+                    setTitle(fileName)
+                    setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
+                    setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, fileName)
+                }
+                (getSystemService(DOWNLOAD_SERVICE) as DownloadManager).enqueue(request)
+                Toast.makeText(this, R.string.download_started, Toast.LENGTH_SHORT).show()
+            }.onFailure {
+                Toast.makeText(this, R.string.download_error, Toast.LENGTH_SHORT).show()
             }
         }
     }
