@@ -88,6 +88,7 @@ class WebViewActivity : BaseActivity() {
                 val popupWebView = WebView(this@WebViewActivity).apply {
                     settings.javaScriptEnabled = true
                     settings.domStorageEnabled = true
+                    settings.userAgentString = binding.webView.settings.userAgentString
                     webViewClient = WebViewClient()
                 }
                 popupDialog?.dismiss()
