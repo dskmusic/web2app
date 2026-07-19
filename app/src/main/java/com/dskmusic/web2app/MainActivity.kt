@@ -527,6 +527,7 @@ class MainActivity : BaseActivity() {
 
         val intent = Intent(this, WebViewActivity::class.java).apply {
             action = Intent.ACTION_VIEW
+            data = Uri.parse("web2app://shortcut/$id")
             putExtra(WebViewActivity.EXTRA_URL, url)
             putExtra(WebViewActivity.EXTRA_SHORTCUT_ID, id)
             putExtra(WebViewActivity.EXTRA_FORCE_THEME, forcedTheme)

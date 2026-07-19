@@ -2,6 +2,7 @@ package com.dskmusic.web2app
 
 import android.content.Intent
 import android.graphics.BitmapFactory
+import android.net.Uri
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
@@ -151,6 +152,7 @@ class ShortcutManagerActivity : BaseActivity() {
         }
         val intent = Intent(this, WebViewActivity::class.java).apply {
             action = Intent.ACTION_VIEW
+            data = Uri.parse("web2app://shortcut/${item.id}")
             putExtra(WebViewActivity.EXTRA_URL, item.url)
             putExtra(WebViewActivity.EXTRA_SHORTCUT_ID, item.id)
             putExtra(WebViewActivity.EXTRA_FORCE_THEME, item.forcedTheme)

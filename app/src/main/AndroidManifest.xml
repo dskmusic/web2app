@@ -38,6 +38,8 @@
         <activity
             android:name=".WebViewActivity"
             android:exported="false"
+            android:taskAffinity=""
+            android:documentLaunchMode="intoExisting"
             android:theme="@style/Theme.Web2App.NoActionBar" />
 
         <activity
