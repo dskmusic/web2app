@@ -1,0 +1,36 @@
+*.iml
+.gradle
+/local.properties
+/.idea/caches
+/.idea/libraries
+/.idea/workspace.xml
+/.idea/navEditor.xml
+/.idea/assetWizardSettings.xml
+.DS_Store
+/build
+/app/build
+/captures
+.externalNativeBuild
+.cxx
+local.properties
+
+# Never commit signing material
+*.keystore
+*.jks
+app/release.keystore
+
+# Manual project backups (.rar snapshots) — large binaries, not source, some exceed
+# GitHub's 100MB per-file limit and would be rejected outright.
+.backup/
+
+# Local tool state — not part of the project, machine/session-specific.
+.claude/
+.kotlin/
+.tokensave/
+
+# Common editor/OS cruft.
+*.swp
+Thumbs.db
+
+# Local sync helper script — personal tooling, not project source.
+xSync-repo_GitHub.bat

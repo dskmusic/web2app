@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Web2App</string>
+
+    <string name="hint_url">URL del sitio web</string>
+    <string name="hint_name">Nombre del acceso directo</string>
+    <string name="select_image">Seleccionar imagen</string>
+    <string name="generate_shortcut">Generar acceso directo</string>
+    <string name="preview_content_description">Vista previa del icono</string>
+
+    <string name="select_image_title">Seleccionar imagen</string>
+    <string name="image_source_device">Importar desde el dispositivo</string>
+    <string name="image_source_camera">Tomar foto</string>
+    <string name="image_source_internet">Buscar en Internet</string>
+    <string name="image_source_web_icon">Icono de la web</string>
+    <string name="favicon_not_found">No se encontró ningún icono en esa web</string>
+
+    <string name="permission_denied">Permiso denegado</string>
+    <string name="error_url_required">Introduce una URL</string>
+    <string name="error_name_required">Introduce un nombre</string>
+    <string name="shortcut_not_supported">Este dispositivo no admite accesos directos anclados</string>
+    <string name="shortcut_created">Acceso directo creado</string>
+    <string name="image_download_error">No se pudo descargar la imagen</string>
+
+    <string name="background_color_title">Color de fondo</string>
+    <string name="bg_color_transparent">Transparente</string>
+    <string name="bg_color_white">Blanco</string>
+    <string name="bg_color_black">Negro</string>
+    <string name="bg_color_blue">Azul</string>
+    <string name="bg_color_green">Verde</string>
+    <string name="bg_color_purple">Morado</string>
+    <string name="bg_color_custom">Personalizado…</string>
+
+    <string name="shortcut_options_title">Opciones del acceso directo</string>
+    <string name="shortcut_theme_label">Abrir la web en modo</string>
+    <string name="allow_rotation_label">Permitir rotación de pantalla</string>
+    <string name="desktop_mode_label">Modo escritorio</string>
+    <string name="incognito_mode_label">Modo incógnito</string>
+    <string name="update_shortcut">Actualizar acceso directo</string>
+    <string name="shortcut_updated">Acceso directo actualizado</string>
+
+    <string name="footer_html"><![CDATA[Made with ❤️ by <a href="https://www.dskmusic.com/dsk_dev_redirect.php">DSK</a>]]></string>
+    <string name="footer_html_short"><![CDATA[With ❤️ by <a href="https://www.dskmusic.com/dsk_dev_redirect.php">DSK</a>]]></string>
+
+    <string name="action_settings">Ajustes</string>
+    <string name="action_manager">Mis accesos directos</string>
+
+    <string name="shortcuts_manager_title">Mis accesos directos</string>
+    <string name="shortcuts_manager_empty">Aún no has creado ningún acceso directo</string>
+    <string name="action_export">Exportar</string>
+    <string name="action_import">Importar</string>
+    <string name="action_edit">Editar</string>
+    <string name="action_repin">Volver a anclar</string>
+    <string name="action_delete">Eliminar</string>
+    <string name="delete_shortcut_title">Eliminar acceso directo</string>
+    <string name="delete_shortcut_message">Se eliminará de esta lista. Si el icono ya está anclado en la pantalla de inicio, tendrás que quitarlo manualmente (Android no permite hacerlo desde la app).</string>
+    <string name="delete">Eliminar</string>
+    <string name="export_success">Copia de seguridad exportada</string>
+    <string name="import_success">%1$d accesos directos importados</string>
+    <string name="more_options">Más opciones</string>
+    <string name="backup_section_title">Copia de seguridad de accesos directos</string>
+
+    <string name="theme_section_title">Tema</string>
+    <string name="theme_system">Predeterminado</string>
+    <string name="theme_light">Claro</string>
+    <string name="theme_dark">Oscuro</string>
+    <string name="theme_blue">Azul</string>
+    <string name="theme_green">Verde</string>
+    <string name="theme_dark_blue">Oscuro azul</string>
+    <string name="theme_dark_green">Oscuro verde</string>
+    <string name="theme_amoled">Negro AMOLED</string>
+
+    <string name="language_section_title">Idioma</string>
+    <string name="language_system">Automático (sistema)</string>
+    <string name="language_es">Español</string>
+    <string name="language_en">Inglés</string>
+
+    <string name="reset_factory_defaults">Restaurar valores de fábrica</string>
+    <string name="reset_confirm_title">Restaurar valores de fábrica</string>
+    <string name="reset_confirm_message">Esto borrará todos los ajustes y los archivos temporales. La aplicación se reiniciará. ¿Continuar?</string>
+    <string name="reset_confirm_positive">Restaurar</string>
+    <string name="cancel">Cancelar</string>
+
+    <string name="exit_confirm_title">Salir</string>
+    <string name="exit_confirm_message">¿Deseas salir de la aplicación?</string>
+    <string name="exit_confirm_positive">Salir</string>
+
+    <string name="update_section_title">Actualizaciones</string>
+    <string name="action_check_update">Buscar actualizaciones</string>
+    <string name="update_available_title">Actualización disponible</string>
+    <string name="update_available_message">Hay una nueva versión (%1$s). ¿Quieres descargarla e instalarla?</string>
+    <string name="update_download_positive">Descargar e instalar</string>
+    <string name="update_later">Más tarde</string>
+    <string name="update_download_notification_title">Web2App — actualización</string>
+    <string name="update_none">Ya tienes la última versión</string>
+    <string name="update_check_error">No se pudo comprobar si hay actualizaciones</string>
+
+    <string name="pixabay_title">Buscar imagen</string>
+    <string name="pixabay_search_hint">Buscar imágenes…</string>
+    <string name="search">Buscar</string>
+    <string name="filter_all">Todo</string>
+    <string name="filter_photo">Fotos</string>
+    <string name="filter_illustration">Ilustraciones</string>
+    <string name="filter_vector">Vectores</string>
+    <string name="pixabay_empty_query">Escribe algo para buscar</string>
+    <string name="pixabay_no_results">Sin resultados</string>
+    <string name="pixabay_search_error">Error de red al buscar imágenes</string>
+</resources>
