@@ -3,6 +3,7 @@ package com.dskmusic.web2app
 import android.Manifest
 import android.app.Dialog
 import android.app.DownloadManager
+import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
 import android.content.res.Configuration
@@ -11,6 +12,7 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Environment
 import android.os.Message
+import android.view.MotionEvent
 import android.webkit.CookieManager
 import android.webkit.PermissionRequest
 import android.webkit.URLUtil
@@ -83,6 +85,7 @@ class WebViewActivity : BaseActivity() {
         applyDesktopMode()
         applyZoom()
         applySelectionLock()
+        setupExternalBrowserGesture()
 
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
@@ -257,6 +260,29 @@ class WebViewActivity : BaseActivity() {
         if (allowSelection) return
         binding.webView.setOnLongClickListener {
             binding.webView.hitTestResult.type != WebView.HitTestResult.EDIT_TEXT_TYPE
+        }
+    }
+
+    private val openInExternalBrowserRunnable = Runnable {
+        val url = binding.webView.url ?: return@Runnable
+        runCatching { startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url))) }
+    }
+
+    /** Undocumented escape hatch: hold two fingers on the page for 2s+ to open it in the system browser. */
+    private fun setupExternalBrowserGesture() {
+        binding.webView.setOnTouchListener { _, event ->
+            when (event.actionMasked) {
+                MotionEvent.ACTION_DOWN, MotionEvent.ACTION_POINTER_DOWN -> {
+                    binding.webView.removeCallbacks(openInExternalBrowserRunnable)
+                    if (event.pointerCount == 2) {
+                        binding.webView.postDelayed(openInExternalBrowserRunnable, 2000)
+                    }
+                }
+                MotionEvent.ACTION_UP, MotionEvent.ACTION_POINTER_UP, MotionEvent.ACTION_CANCEL -> {
+                    binding.webView.removeCallbacks(openInExternalBrowserRunnable)
+                }
+            }
+            false
         }
     }
 
