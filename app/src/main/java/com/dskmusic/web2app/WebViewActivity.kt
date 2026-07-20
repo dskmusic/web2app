@@ -12,6 +12,7 @@ import android.os.Bundle
 import android.os.Environment
 import android.os.Message
 import android.webkit.CookieManager
+import android.webkit.PermissionRequest
 import android.webkit.URLUtil
 import android.webkit.WebChromeClient
 import android.webkit.WebStorage
@@ -34,6 +35,23 @@ class WebViewActivity : BaseActivity() {
 
     private val storagePermissionLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
         if (!granted) Toast.makeText(this, R.string.download_permission_needed, Toast.LENGTH_SHORT).show()
+    }
+
+    private var pendingPermissionRequest: PermissionRequest? = null
+    private val mediaPermissionLauncher = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { results ->
+        val request = pendingPermissionRequest
+        pendingPermissionRequest = null
+        if (request == null) return@registerForActivityResult
+        val grantedResources = request.resources.filter { resource ->
+            val permission = MEDIA_PERMISSIONS[resource] ?: return@filter false
+            results[permission] == true || ContextCompat.checkSelfPermission(this, permission) == PackageManager.PERMISSION_GRANTED
+        }
+        if (grantedResources.isNotEmpty()) {
+            request.grant(grantedResources.toTypedArray())
+        } else {
+            request.deny()
+            Toast.makeText(this, R.string.media_permission_needed, Toast.LENGTH_SHORT).show()
+        }
     }
 
     override fun useNoActionBar(): Boolean = true
@@ -119,6 +137,23 @@ class WebViewActivity : BaseActivity() {
             override fun onCloseWindow(window: WebView) {
                 popupDialog?.dismiss()
                 popupDialog = null
+            }
+
+            override fun onPermissionRequest(request: PermissionRequest) {
+                val neededPermissions = request.resources.mapNotNull { MEDIA_PERMISSIONS[it] }.distinct()
+                if (neededPermissions.isEmpty()) {
+                    request.deny()
+                    return
+                }
+                val missing = neededPermissions.filter {
+                    ContextCompat.checkSelfPermission(this@WebViewActivity, it) != PackageManager.PERMISSION_GRANTED
+                }
+                if (missing.isEmpty()) {
+                    request.grant(request.resources)
+                    return
+                }
+                pendingPermissionRequest = request
+                mediaPermissionLauncher.launch(missing.toTypedArray())
             }
         }
     }
@@ -250,5 +285,9 @@ class WebViewActivity : BaseActivity() {
         const val THEME_DARK = "dark"
         private const val DESKTOP_USER_AGENT =
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
+        private val MEDIA_PERMISSIONS = mapOf(
+            PermissionRequest.RESOURCE_AUDIO_CAPTURE to Manifest.permission.RECORD_AUDIO,
+            PermissionRequest.RESOURCE_VIDEO_CAPTURE to Manifest.permission.CAMERA
+        )
     }
 }

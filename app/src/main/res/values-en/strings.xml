@@ -107,6 +107,7 @@
     <string name="download_started">Downloading…</string>
     <string name="download_error">Couldn\'t start the download</string>
     <string name="download_permission_needed">Grant the storage permission and try again</string>
+    <string name="media_permission_needed">Grant the camera or microphone permission and try again</string>
 
     <string name="pixabay_title">Search image</string>
     <string name="pixabay_search_hint">Search images…</string>
