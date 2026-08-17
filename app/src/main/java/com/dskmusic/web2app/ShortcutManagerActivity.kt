@@ -10,7 +10,6 @@ import android.view.MotionEvent
 import android.view.View
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
-import androidx.activity.result.contract.ActivityResultContracts
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import androidx.core.content.pm.ShortcutInfoCompat
 import androidx.core.content.pm.ShortcutManagerCompat
@@ -37,21 +36,6 @@ class ShortcutManagerActivity : BaseActivity() {
     override fun dispatchTouchEvent(ev: MotionEvent): Boolean {
         edgeSwipeGestureDetector.onTouchEvent(ev)
         return super.dispatchTouchEvent(ev)
-    }
-
-    private val exportLauncher = registerForActivityResult(ActivityResultContracts.CreateDocument("application/json")) { uri ->
-        if (uri != null) {
-            ShortcutStore.exportTo(this, uri)
-            Toast.makeText(this, R.string.export_success, Toast.LENGTH_SHORT).show()
-        }
-    }
-
-    private val importLauncher = registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
-        if (uri != null) {
-            val count = ShortcutStore.importFrom(this, uri)
-            Toast.makeText(this, getString(R.string.import_success, count), Toast.LENGTH_SHORT).show()
-            refreshList()
-        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -108,8 +92,6 @@ class ShortcutManagerActivity : BaseActivity() {
         menu.findItem(R.id.action_delete_selected).isVisible = selecting
         menu.findItem(R.id.action_add).isVisible = !selecting
         menu.findItem(R.id.action_settings).isVisible = !selecting
-        menu.findItem(R.id.action_export).isVisible = !selecting
-        menu.findItem(R.id.action_import).isVisible = !selecting
         return super.onPrepareOptionsMenu(menu)
     }
 
@@ -117,8 +99,6 @@ class ShortcutManagerActivity : BaseActivity() {
         return when (item.itemId) {
             R.id.action_add -> { startActivity(Intent(this, MainActivity::class.java)); true }
             R.id.action_settings -> { startActivity(Intent(this, SettingsActivity::class.java)); true }
-            R.id.action_export -> { exportLauncher.launch("web2app_shortcuts.json"); true }
-            R.id.action_import -> { importLauncher.launch(arrayOf("application/json")); true }
             R.id.action_delete_selected -> { confirmDeleteSelected(); true }
             else -> super.onOptionsItemSelected(item)
         }

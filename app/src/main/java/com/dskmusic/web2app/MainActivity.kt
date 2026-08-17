@@ -10,8 +10,6 @@ import android.graphics.Color
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import android.view.Menu
-import android.view.MenuItem
 import android.view.MotionEvent
 import android.view.View
 import android.widget.ImageView
@@ -153,21 +151,6 @@ class MainActivity : BaseActivity() {
         binding.swIncognito.isChecked = Prefs.getDefaultIncognito(this)
         binding.swAllowZoom.isChecked = Prefs.getDefaultAllowZoom(this)
         binding.swAllowSelection.isChecked = Prefs.getDefaultAllowSelection(this)
-    }
-
-    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        menuInflater.inflate(R.menu.menu_main, menu)
-        return true
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        return when (item.itemId) {
-            R.id.action_settings -> {
-                startActivity(Intent(this, SettingsActivity::class.java))
-                true
-            }
-            else -> super.onOptionsItemSelected(item)
-        }
     }
 
     private fun loadEditTarget() {

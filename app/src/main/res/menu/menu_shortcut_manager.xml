@@ -15,18 +15,6 @@
         app:showAsAction="always" />
 
     <item
-        android:id="@+id/action_export"
-        android:title="@string/action_export"
-        android:icon="@android:drawable/ic_menu_save"
-        app:showAsAction="never" />
-
-    <item
-        android:id="@+id/action_import"
-        android:title="@string/action_import"
-        android:icon="@android:drawable/ic_menu_upload"
-        app:showAsAction="never" />
-
-    <item
         android:id="@+id/action_delete_selected"
         android:title="@string/action_delete_selected"
         android:icon="@android:drawable/ic_menu_delete"
