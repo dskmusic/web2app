@@ -4,9 +4,18 @@
 
     <string name="hint_url">Website URL</string>
     <string name="hint_name">Shortcut name</string>
+    <string name="hint_folder">Folder where you saved it (optional)</string>
     <string name="select_image">Select image</string>
     <string name="generate_shortcut">Generate shortcut</string>
     <string name="preview_content_description">Icon preview</string>
+
+    <string name="capture_section_title">Screenshot (optional)</string>
+    <string name="select_capture">Add screenshot</string>
+    <string name="remove_capture">Remove screenshot</string>
+    <string name="capture_preview_content_description">Screenshot preview</string>
+    <string name="capture_source_device">From device</string>
+    <string name="capture_source_clipboard">Paste from clipboard</string>
+    <string name="capture_clipboard_empty">The clipboard doesn\'t contain an image</string>
 
     <string name="select_image_title">Select image</string>
     <string name="image_source_device">Import from device</string>

@@ -4,9 +4,18 @@
 
     <string name="hint_url">URL del sitio web</string>
     <string name="hint_name">Nombre del acceso directo</string>
+    <string name="hint_folder">Carpeta donde lo guardaste (opcional)</string>
     <string name="select_image">Seleccionar imagen</string>
     <string name="generate_shortcut">Generar acceso directo</string>
     <string name="preview_content_description">Vista previa del icono</string>
+
+    <string name="capture_section_title">Captura de pantalla (opcional)</string>
+    <string name="select_capture">Añadir captura</string>
+    <string name="remove_capture">Quitar captura</string>
+    <string name="capture_preview_content_description">Vista previa de la captura</string>
+    <string name="capture_source_device">Desde el dispositivo</string>
+    <string name="capture_source_clipboard">Pegar del portapapeles</string>
+    <string name="capture_clipboard_empty">El portapapeles no contiene ninguna imagen</string>
 
     <string name="select_image_title">Seleccionar imagen</string>
     <string name="image_source_device">Importar desde el dispositivo</string>

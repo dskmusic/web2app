@@ -155,6 +155,7 @@ class ShortcutManagerActivity : BaseActivity() {
             data = Uri.parse("web2app://shortcut/${item.id}")
             putExtra(WebViewActivity.EXTRA_URL, item.url)
             putExtra(WebViewActivity.EXTRA_SHORTCUT_ID, item.id)
+            putExtra(WebViewActivity.EXTRA_NAME, item.name)
             putExtra(WebViewActivity.EXTRA_FORCE_THEME, item.forcedTheme)
             putExtra(WebViewActivity.EXTRA_ALLOW_ROTATION, item.allowRotation)
             putExtra(WebViewActivity.EXTRA_DESKTOP_MODE, item.desktopMode)

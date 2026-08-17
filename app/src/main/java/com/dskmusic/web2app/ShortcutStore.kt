@@ -18,6 +18,7 @@ object ShortcutStore {
 
     fun iconFile(context: Context, id: String): File = File(iconsDir(context), "$id.png")
     fun sourceIconFile(context: Context, id: String): File = File(iconsDir(context), "${id}_source.png")
+    fun captureFile(context: Context, id: String): File = File(iconsDir(context), "${id}_capture.png")
 
     private fun iconsDir(context: Context) = File(context.filesDir, ICONS_DIR).apply { mkdirs() }
     private fun catalogFile(context: Context) = File(context.filesDir, CATALOG_FILE)
@@ -45,6 +46,7 @@ object ShortcutStore {
         saveAll(context, loadAll(context).filterNot { it.id == id })
         iconFile(context, id).delete()
         sourceIconFile(context, id).delete()
+        captureFile(context, id).delete()
     }
 
     private fun toJson(s: SavedShortcut) = JSONObject().apply {
@@ -59,6 +61,7 @@ object ShortcutStore {
         put("allowZoom", s.allowZoom)
         put("allowSelection", s.allowSelection)
         put("createdAt", s.createdAt)
+        put("folder", s.folder)
     }
 
     private fun fromJson(o: JSONObject) = SavedShortcut(
@@ -72,7 +75,8 @@ object ShortcutStore {
         incognito = o.optBoolean("incognito", false),
         allowZoom = o.optBoolean("allowZoom", false),
         allowSelection = o.optBoolean("allowSelection", false),
-        createdAt = o.optLong("createdAt", System.currentTimeMillis())
+        createdAt = o.optLong("createdAt", System.currentTimeMillis()),
+        folder = o.optString("folder", "")
     )
 
     /** Self-contained export: app settings, plus shortcut metadata and the final icon (base64), in one JSON file. */
@@ -82,6 +86,8 @@ object ShortcutStore {
             val json = toJson(s)
             val bytes = iconFile(context, s.id).takeIf { it.exists() }?.readBytes()
             json.put("icon", bytes?.let { Base64.encodeToString(it, Base64.NO_WRAP) } ?: JSONObject.NULL)
+            val captureBytes = captureFile(context, s.id).takeIf { it.exists() }?.readBytes()
+            json.put("capture", captureBytes?.let { Base64.encodeToString(it, Base64.NO_WRAP) } ?: JSONObject.NULL)
             shortcuts.put(json)
         }
         val settings = JSONObject().apply {
@@ -141,6 +147,10 @@ object ShortcutStore {
             if (!o.isNull("icon")) {
                 val bytes = Base64.decode(o.getString("icon"), Base64.NO_WRAP)
                 iconFile(context, shortcut.id).writeBytes(bytes)
+            }
+            if (!o.isNull("capture")) {
+                val bytes = Base64.decode(o.getString("capture"), Base64.NO_WRAP)
+                captureFile(context, shortcut.id).writeBytes(bytes)
             }
             newList.add(0, shortcut)
             imported++

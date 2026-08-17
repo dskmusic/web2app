@@ -11,5 +11,6 @@ data class SavedShortcut(
     val incognito: Boolean,
     val allowZoom: Boolean,
     val allowSelection: Boolean,
-    val createdAt: Long
+    val createdAt: Long,
+    val folder: String = ""
 )

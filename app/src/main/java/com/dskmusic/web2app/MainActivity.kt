@@ -1,6 +1,7 @@
 package com.dskmusic.web2app
 
 import android.Manifest
+import android.content.ClipboardManager
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
@@ -12,6 +13,7 @@ import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import android.view.MotionEvent
+import android.view.View
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
@@ -39,6 +41,8 @@ class MainActivity : BaseActivity() {
     private var backgroundColor: Int? = null
     private var pendingCameraUri: Uri? = null
     private var editingId: String? = null
+    private var captureBitmap: Bitmap? = null
+    private var captureRemoved = false
 
     override fun useNoActionBar(): Boolean = true
 
@@ -76,6 +80,14 @@ class MainActivity : BaseActivity() {
         if (granted) getContentLauncher.launch("image/*") else showToast(R.string.permission_denied)
     }
 
+    private val captureContentLauncher = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+        uri?.let { loadCaptureFromUri(it) }
+    }
+
+    private val captureStoragePermissionLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+        if (granted) captureContentLauncher.launch("image/*") else showToast(R.string.permission_denied)
+    }
+
     private val pixabayLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         if (result.resultCode == RESULT_OK) {
             val url = result.data?.getStringExtra(PixabaySearchActivity.EXTRA_IMAGE_URL)
@@ -95,6 +107,7 @@ class MainActivity : BaseActivity() {
 
         binding.etUrl.hideKeyboardOnImeAction()
         binding.etName.hideKeyboardOnImeAction()
+        binding.etFolder.hideKeyboardOnImeAction()
 
         binding.etUrl.setOnFocusChangeListener { _, hasFocus ->
             if (!hasFocus) tryAutoFavicon(binding.etUrl.text?.toString()?.trim().orEmpty())
@@ -107,6 +120,10 @@ class MainActivity : BaseActivity() {
             source?.let { startCrop(it) } ?: showImageSourceDialog()
         }
         binding.btnGenerate.setOnClickListener { generateShortcut() }
+
+        binding.btnSelectCapture.setOnClickListener { showCaptureSourceDialog() }
+        binding.ivCapturePreview.setOnClickListener { showCaptureSourceDialog() }
+        binding.btnClearCapture.setOnClickListener { clearCapture() }
 
         applyDefaultShortcutOptions()
         loadEditTarget()
@@ -170,12 +187,19 @@ class MainActivity : BaseActivity() {
 
         binding.etUrl.setText(saved.url)
         binding.etName.setText(saved.name)
+        binding.etFolder.setText(saved.folder)
         backgroundColor = saved.backgroundColor
 
         val sourceFile = ShortcutStore.sourceIconFile(this, id)
         if (sourceFile.exists()) {
             croppedBitmap = BitmapFactory.decodeFile(sourceFile.absolutePath)
             refreshPreview()
+        }
+
+        val captureFile = ShortcutStore.captureFile(this, id)
+        if (captureFile.exists()) {
+            captureBitmap = BitmapFactory.decodeFile(captureFile.absolutePath)
+            refreshCapturePreview()
         }
 
         when (saved.forcedTheme) {
@@ -271,6 +295,69 @@ class MainActivity : BaseActivity() {
         } else {
             storagePermissionLauncher.launch(permission)
         }
+    }
+
+    private fun showCaptureSourceDialog() {
+        val options = arrayOf(
+            getString(R.string.capture_source_device),
+            getString(R.string.capture_source_clipboard)
+        )
+        MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.select_capture)
+            .setItems(options) { _, which ->
+                when (which) {
+                    0 -> requestCaptureGalleryImage()
+                    1 -> pasteCaptureFromClipboard()
+                }
+            }
+            .show()
+    }
+
+    private fun requestCaptureGalleryImage() {
+        val permission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            Manifest.permission.READ_MEDIA_IMAGES
+        } else {
+            Manifest.permission.READ_EXTERNAL_STORAGE
+        }
+        if (ContextCompat.checkSelfPermission(this, permission) == PackageManager.PERMISSION_GRANTED) {
+            captureContentLauncher.launch("image/*")
+        } else {
+            captureStoragePermissionLauncher.launch(permission)
+        }
+    }
+
+    private fun pasteCaptureFromClipboard() {
+        val clipboard = getSystemService(CLIPBOARD_SERVICE) as ClipboardManager
+        val uri = clipboard.primaryClip?.takeIf { it.itemCount > 0 }?.getItemAt(0)?.uri
+        if (uri == null) {
+            showToast(R.string.capture_clipboard_empty)
+            return
+        }
+        loadCaptureFromUri(uri)
+    }
+
+    private fun loadCaptureFromUri(uri: Uri) {
+        val bitmap = runCatching { contentResolver.openInputStream(uri)?.use { BitmapFactory.decodeStream(it) } }.getOrNull()
+        if (bitmap == null) {
+            showToast(R.string.capture_clipboard_empty)
+            return
+        }
+        captureBitmap = bitmap
+        captureRemoved = false
+        refreshCapturePreview()
+    }
+
+    private fun clearCapture() {
+        captureBitmap = null
+        captureRemoved = true
+        refreshCapturePreview()
+    }
+
+    private fun refreshCapturePreview() {
+        val bitmap = captureBitmap
+        binding.ivCapturePreview.setImageBitmap(bitmap)
+        binding.ivCapturePreview.visibility = if (bitmap != null) View.VISIBLE else View.GONE
+        binding.btnClearCapture.visibility = if (bitmap != null) View.VISIBLE else View.GONE
     }
 
     private fun requestCameraImage() {
@@ -491,6 +578,7 @@ class MainActivity : BaseActivity() {
     private fun generateShortcut() {
         val rawUrl = binding.etUrl.text?.toString()?.trim().orEmpty()
         val name = binding.etName.text?.toString()?.trim().orEmpty()
+        val folder = binding.etFolder.text?.toString()?.trim().orEmpty()
 
         if (rawUrl.isEmpty()) {
             binding.etUrl.error = getString(R.string.error_url_required)
@@ -530,6 +618,7 @@ class MainActivity : BaseActivity() {
             data = Uri.parse("web2app://shortcut/$id")
             putExtra(WebViewActivity.EXTRA_URL, url)
             putExtra(WebViewActivity.EXTRA_SHORTCUT_ID, id)
+            putExtra(WebViewActivity.EXTRA_NAME, name)
             putExtra(WebViewActivity.EXTRA_FORCE_THEME, forcedTheme)
             putExtra(WebViewActivity.EXTRA_ALLOW_ROTATION, allowRotation)
             putExtra(WebViewActivity.EXTRA_DESKTOP_MODE, desktopMode)
@@ -545,7 +634,7 @@ class MainActivity : BaseActivity() {
             .setIntent(intent)
             .build()
 
-        persistShortcutRecord(id, name, url, forcedTheme, allowRotation, desktopMode, incognito, allowZoom, allowSelection, finalIconBitmap)
+        persistShortcutRecord(id, name, url, forcedTheme, allowRotation, desktopMode, incognito, allowZoom, allowSelection, finalIconBitmap, folder)
 
         if (editingId != null) {
             ShortcutManagerCompat.updateShortcuts(this, listOf(shortcutInfo))
@@ -569,9 +658,13 @@ class MainActivity : BaseActivity() {
         croppedBitmap = null
         rawImageUri = null
         backgroundColor = null
+        captureBitmap = null
+        captureRemoved = false
         binding.etUrl.text = null
         binding.etName.text = null
+        binding.etFolder.text = null
         binding.ivPreview.setImageResource(R.mipmap.ic_launcher)
+        refreshCapturePreview()
         applyDefaultShortcutOptions()
         binding.btnGenerate.setText(R.string.generate_shortcut)
     }
@@ -586,13 +679,20 @@ class MainActivity : BaseActivity() {
         incognito: Boolean,
         allowZoom: Boolean,
         allowSelection: Boolean,
-        finalIcon: Bitmap?
+        finalIcon: Bitmap?,
+        folder: String
     ) {
         croppedBitmap?.let { raw ->
             FileOutputStream(ShortcutStore.sourceIconFile(this, id)).use { raw.compress(Bitmap.CompressFormat.PNG, 100, it) }
         }
         finalIcon?.let { icon ->
             FileOutputStream(ShortcutStore.iconFile(this, id)).use { icon.compress(Bitmap.CompressFormat.PNG, 100, it) }
+        }
+        val capture = captureBitmap
+        if (capture != null) {
+            FileOutputStream(ShortcutStore.captureFile(this, id)).use { capture.compress(Bitmap.CompressFormat.PNG, 100, it) }
+        } else if (captureRemoved) {
+            ShortcutStore.captureFile(this, id).delete()
         }
         ShortcutStore.upsert(
             this,
@@ -607,7 +707,8 @@ class MainActivity : BaseActivity() {
                 incognito = incognito,
                 allowZoom = allowZoom,
                 allowSelection = allowSelection,
-                createdAt = System.currentTimeMillis()
+                createdAt = System.currentTimeMillis(),
+                folder = folder
             )
         )
     }

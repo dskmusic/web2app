@@ -1,12 +1,14 @@
 package com.dskmusic.web2app
 
 import android.Manifest
+import android.app.ActivityManager
 import android.app.Dialog
 import android.app.DownloadManager
 import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
 import android.content.res.Configuration
+import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -86,6 +88,7 @@ class WebViewActivity : BaseActivity() {
         applyZoom()
         applySelectionLock()
         setupExternalBrowserGesture()
+        applyTaskDescription()
 
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
@@ -286,6 +289,20 @@ class WebViewActivity : BaseActivity() {
         }
     }
 
+    /**
+     * Without this, the Recents/multitasking card falls back to the <application>'s own label and
+     * icon (Web2App), even though this task (taskAffinity="") is really one specific shortcut.
+     */
+    private fun applyTaskDescription() {
+        val name = intent.getStringExtra(EXTRA_NAME) ?: return
+        val icon = intent.getStringExtra(EXTRA_SHORTCUT_ID)
+            ?.let { ShortcutStore.iconFile(this, it) }
+            ?.takeIf { it.exists() }
+            ?.let { BitmapFactory.decodeFile(it.absolutePath) }
+        @Suppress("DEPRECATION")
+        setTaskDescription(ActivityManager.TaskDescription(name, icon))
+    }
+
     private fun applyForcedTheme() {
         if (!WebViewFeature.isFeatureSupported(WebViewFeature.ALGORITHMIC_DARKENING)) return
         val forced = intent.getStringExtra(EXTRA_FORCE_THEME) ?: THEME_SYSTEM
@@ -300,6 +317,7 @@ class WebViewActivity : BaseActivity() {
     companion object {
         const val EXTRA_URL = "extra_url"
         const val EXTRA_SHORTCUT_ID = "extra_shortcut_id"
+        const val EXTRA_NAME = "extra_name"
         const val EXTRA_FORCE_THEME = "extra_force_theme"
         const val EXTRA_ALLOW_ROTATION = "extra_allow_rotation"
         const val EXTRA_DESKTOP_MODE = "extra_desktop_mode"
