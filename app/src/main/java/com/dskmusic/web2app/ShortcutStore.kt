@@ -86,6 +86,8 @@ object ShortcutStore {
             val json = toJson(s)
             val bytes = iconFile(context, s.id).takeIf { it.exists() }?.readBytes()
             json.put("icon", bytes?.let { Base64.encodeToString(it, Base64.NO_WRAP) } ?: JSONObject.NULL)
+            val sourceBytes = sourceIconFile(context, s.id).takeIf { it.exists() }?.readBytes()
+            json.put("sourceIcon", sourceBytes?.let { Base64.encodeToString(it, Base64.NO_WRAP) } ?: JSONObject.NULL)
             val captureBytes = captureFile(context, s.id).takeIf { it.exists() }?.readBytes()
             json.put("capture", captureBytes?.let { Base64.encodeToString(it, Base64.NO_WRAP) } ?: JSONObject.NULL)
             shortcuts.put(json)
@@ -147,6 +149,10 @@ object ShortcutStore {
             if (!o.isNull("icon")) {
                 val bytes = Base64.decode(o.getString("icon"), Base64.NO_WRAP)
                 iconFile(context, shortcut.id).writeBytes(bytes)
+            }
+            if (!o.isNull("sourceIcon")) {
+                val bytes = Base64.decode(o.getString("sourceIcon"), Base64.NO_WRAP)
+                sourceIconFile(context, shortcut.id).writeBytes(bytes)
             }
             if (!o.isNull("capture")) {
                 val bytes = Base64.decode(o.getString("capture"), Base64.NO_WRAP)

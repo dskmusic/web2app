@@ -194,6 +194,18 @@ class MainActivity : BaseActivity() {
         if (sourceFile.exists()) {
             croppedBitmap = BitmapFactory.decodeFile(sourceFile.absolutePath)
             refreshPreview()
+        } else {
+            // ponytail: shortcuts imported before backups included the source icon have nothing
+            // editable to load — fall back to the already-composed icon so the preview isn't
+            // blank and saving without picking a new image doesn't wipe the pinned icon to the
+            // app default. Upgrade path: none needed, this self-heals once saved (writes a real
+            // sourceIconFile from then on).
+            val composedFile = ShortcutStore.iconFile(this, id)
+            if (composedFile.exists()) {
+                val composed = BitmapFactory.decodeFile(composedFile.absolutePath)
+                croppedBitmap = composed
+                binding.ivPreview.setImageBitmap(BitmapUtils.previewCrop(composed))
+            }
         }
 
         val captureFile = ShortcutStore.captureFile(this, id)
