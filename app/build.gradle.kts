@@ -24,8 +24,8 @@ android {
         applicationId = "com.dskmusic.web2app"
         minSdk = 26
         targetSdk = 34
-        versionCode = 19
-        versionName = "1.19"
+        versionCode = 20
+        versionName = "1.20"
         buildConfigField("String", "PIXABAY_API_KEY", "\"$pixabayApiKey\"")
     }
 
