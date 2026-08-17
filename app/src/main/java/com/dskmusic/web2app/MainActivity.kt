@@ -184,6 +184,7 @@ class MainActivity : BaseActivity() {
         val saved = ShortcutStore.loadAll(this).find { it.id == id } ?: return
         editingId = id
         binding.btnGenerate.setText(R.string.update_shortcut)
+        binding.tvHeaderTitle.setText(R.string.edit_shortcut_title)
 
         binding.etUrl.setText(saved.url)
         binding.etName.setText(saved.name)
@@ -695,6 +696,7 @@ class MainActivity : BaseActivity() {
         refreshCapturePreview()
         applyDefaultShortcutOptions()
         binding.btnGenerate.setText(R.string.generate_shortcut)
+        binding.tvHeaderTitle.setText(R.string.new_shortcut_title)
     }
 
     private fun persistShortcutRecord(

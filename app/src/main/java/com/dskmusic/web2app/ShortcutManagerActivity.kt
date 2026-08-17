@@ -55,7 +55,7 @@ class ShortcutManagerActivity : BaseActivity() {
         binding = ActivityShortcutManagerBinding.inflate(layoutInflater)
         setContentView(binding.root)
         setSupportActionBar(binding.toolbar)
-        binding.toolbar.setNavigationOnClickListener { startActivity(Intent(this, MainActivity::class.java)) }
+        supportActionBar?.setDisplayShowTitleEnabled(false)
 
         adapter = SavedShortcutAdapter(mutableListOf(), ::onEdit, ::onRepin, ::onDelete, ::onSelectionChanged)
         binding.recyclerView.layoutManager = LinearLayoutManager(this)
@@ -95,6 +95,7 @@ class ShortcutManagerActivity : BaseActivity() {
     override fun onPrepareOptionsMenu(menu: Menu): Boolean {
         val selecting = adapter.isInSelectionMode()
         menu.findItem(R.id.action_delete_selected).isVisible = selecting
+        menu.findItem(R.id.action_add).isVisible = !selecting
         menu.findItem(R.id.action_settings).isVisible = !selecting
         menu.findItem(R.id.action_export).isVisible = !selecting
         menu.findItem(R.id.action_import).isVisible = !selecting
@@ -103,6 +104,7 @@ class ShortcutManagerActivity : BaseActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
+            R.id.action_add -> { startActivity(Intent(this, MainActivity::class.java)); true }
             R.id.action_settings -> { startActivity(Intent(this, SettingsActivity::class.java)); true }
             R.id.action_export -> { exportLauncher.launch("web2app_shortcuts.json"); true }
             R.id.action_import -> { importLauncher.launch(arrayOf("application/json")); true }
@@ -112,7 +114,9 @@ class ShortcutManagerActivity : BaseActivity() {
     }
 
     private fun onSelectionChanged(count: Int) {
-        binding.toolbar.title = if (count > 0) getString(R.string.selected_count, count) else getString(R.string.shortcuts_manager_title)
+        binding.llBrandHeader.visibility = if (count > 0) View.GONE else View.VISIBLE
+        binding.tvSelectionTitle.visibility = if (count > 0) View.VISIBLE else View.GONE
+        if (count > 0) binding.tvSelectionTitle.text = getString(R.string.selected_count, count)
         invalidateOptionsMenu()
     }
 
