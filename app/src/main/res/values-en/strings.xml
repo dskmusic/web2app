@@ -57,9 +57,9 @@
     <string name="footer_html_short"><![CDATA[With ❤️ by <a href="https://www.dskmusic.com/dsk_dev_redirect.php">DSK</a>]]></string>
 
     <string name="action_settings">Settings</string>
-    <string name="action_manager">My shortcuts</string>
 
     <string name="shortcuts_manager_title">My shortcuts</string>
+    <string name="add_shortcut">Add shortcut</string>
     <string name="shortcuts_manager_empty">You haven\'t created any shortcuts yet</string>
     <string name="action_export">Export</string>
     <string name="action_import">Import</string>

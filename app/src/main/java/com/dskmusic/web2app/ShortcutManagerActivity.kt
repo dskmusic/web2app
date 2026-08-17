@@ -25,7 +25,7 @@ class ShortcutManagerActivity : BaseActivity() {
 
     override fun useNoActionBar(): Boolean = true
 
-    /** Swiping in from either screen edge closes this screen, symmetric with opening it from MainActivity. */
+    /** Swiping in from either screen edge acts like the back button (exits selection mode, or prompts to exit). */
     private val edgeSwipeGestureDetector by lazy {
         edgeSwipeDetector { onBackPressedDispatcher.onBackPressed() }
     }
@@ -55,7 +55,7 @@ class ShortcutManagerActivity : BaseActivity() {
         binding = ActivityShortcutManagerBinding.inflate(layoutInflater)
         setContentView(binding.root)
         setSupportActionBar(binding.toolbar)
-        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        binding.toolbar.setNavigationOnClickListener { startActivity(Intent(this, MainActivity::class.java)) }
 
         adapter = SavedShortcutAdapter(mutableListOf(), ::onEdit, ::onRepin, ::onDelete, ::onSelectionChanged)
         binding.recyclerView.layoutManager = LinearLayoutManager(this)
@@ -67,16 +67,19 @@ class ShortcutManagerActivity : BaseActivity() {
                     adapter.exitSelectionMode()
                     onSelectionChanged(0)
                 } else {
-                    isEnabled = false
-                    onBackPressedDispatcher.onBackPressed()
+                    confirmExit()
                 }
             }
         })
     }
 
-    override fun onSupportNavigateUp(): Boolean {
-        onBackPressedDispatcher.onBackPressed()
-        return true
+    private fun confirmExit() {
+        MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.exit_confirm_title)
+            .setMessage(R.string.exit_confirm_message)
+            .setPositiveButton(R.string.exit_confirm_positive) { _, _ -> finish() }
+            .setNegativeButton(R.string.cancel, null)
+            .show()
     }
 
     override fun onResume() {

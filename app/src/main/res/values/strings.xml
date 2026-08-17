@@ -57,9 +57,9 @@
     <string name="footer_html_short"><![CDATA[With ❤️ by <a href="https://www.dskmusic.com/dsk_dev_redirect.php">DSK</a>]]></string>
 
     <string name="action_settings">Ajustes</string>
-    <string name="action_manager">Mis accesos directos</string>
 
     <string name="shortcuts_manager_title">Mis accesos directos</string>
+    <string name="add_shortcut">Añadir acceso directo</string>
     <string name="shortcuts_manager_empty">Aún no has creado ningún acceso directo</string>
     <string name="action_export">Exportar</string>
     <string name="action_import">Importar</string>

@@ -47,9 +47,9 @@ class MainActivity : BaseActivity() {
 
     override fun useNoActionBar(): Boolean = true
 
-    /** Swiping in from either screen edge opens the shortcut manager, like a hidden edge drawer. */
+    /** Swiping in from either screen edge returns to the shortcut manager (the app's home screen). */
     private val edgeSwipeGestureDetector by lazy {
-        edgeSwipeDetector { startActivity(Intent(this, ShortcutManagerActivity::class.java)) }
+        edgeSwipeDetector { finish() }
     }
 
     override fun dispatchTouchEvent(ev: MotionEvent): Boolean {
@@ -132,7 +132,7 @@ class MainActivity : BaseActivity() {
 
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
-                if (hasUnsavedInput()) resetForm() else confirmExit()
+                if (hasUnsavedInput()) resetForm() else finish()
             }
         })
 
@@ -149,15 +149,6 @@ class MainActivity : BaseActivity() {
             binding.etFolder.text?.isNotBlank() == true ||
             croppedBitmap != null ||
             captureBitmap != null
-    }
-
-    private fun confirmExit() {
-        MaterialAlertDialogBuilder(this)
-            .setTitle(R.string.exit_confirm_title)
-            .setMessage(R.string.exit_confirm_message)
-            .setPositiveButton(R.string.exit_confirm_positive) { _, _ -> finish() }
-            .setNegativeButton(R.string.cancel, null)
-            .show()
     }
 
     private fun applyDefaultShortcutOptions() {
@@ -182,10 +173,6 @@ class MainActivity : BaseActivity() {
         return when (item.itemId) {
             R.id.action_settings -> {
                 startActivity(Intent(this, SettingsActivity::class.java))
-                true
-            }
-            R.id.action_shortcuts_manager -> {
-                startActivity(Intent(this, ShortcutManagerActivity::class.java))
                 true
             }
             else -> super.onOptionsItemSelected(item)

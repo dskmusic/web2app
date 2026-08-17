@@ -12,7 +12,8 @@
         android:background="?attr/colorPrimary"
         app:title="@string/shortcuts_manager_title"
         app:titleTextColor="?attr/colorOnPrimary"
-        app:navigationIcon="?attr/homeAsUpIndicator" />
+        app:navigationIcon="@drawable/ic_add"
+        app:navigationContentDescription="@string/add_shortcut" />
 
     <FrameLayout
         android:layout_width="match_parent"
