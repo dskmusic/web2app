@@ -40,12 +40,13 @@ class MainActivity : BaseActivity() {
     private var editingId: String? = null
     private var captureBitmap: Bitmap? = null
     private var captureRemoved = false
+    private var initialSnapshot: FormSnapshot? = null
 
     override fun useNoActionBar(): Boolean = true
 
-    /** Swiping in from either screen edge returns to the shortcut manager (the app's home screen). */
+    /** Swiping in from either screen edge acts like the back button (may prompt to discard changes). */
     private val edgeSwipeGestureDetector by lazy {
-        edgeSwipeDetector { finish() }
+        edgeSwipeDetector { onBackPressedDispatcher.onBackPressed() }
     }
 
     override fun dispatchTouchEvent(ev: MotionEvent): Boolean {
@@ -121,24 +122,59 @@ class MainActivity : BaseActivity() {
 
         applyDefaultShortcutOptions()
         loadEditTarget()
+        initialSnapshot = currentSnapshot()
         handleShareIntent()
 
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
-                if (hasUnsavedInput()) resetForm() else finish()
+                if (currentSnapshot() != initialSnapshot) confirmDiscardChanges() else finish()
             }
         })
     }
 
-    /** While creating a new shortcut (not editing), anything entered counts as an undoable step. */
-    private fun hasUnsavedInput(): Boolean {
-        if (editingId != null) return false
-        return binding.etUrl.text?.isNotBlank() == true ||
-            binding.etName.text?.isNotBlank() == true ||
-            binding.etFolder.text?.isNotBlank() == true ||
-            croppedBitmap != null ||
-            captureBitmap != null
+    private fun confirmDiscardChanges() {
+        MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.discard_changes_title)
+            .setMessage(R.string.discard_changes_message)
+            .setPositiveButton(R.string.discard) { _, _ -> finish() }
+            .setNegativeButton(R.string.cancel, null)
+            .show()
     }
+
+    /** Everything that counts toward "has this form changed since it was opened/loaded". */
+    private data class FormSnapshot(
+        val url: String,
+        val name: String,
+        val folder: String,
+        val backgroundColor: Int?,
+        val forcedTheme: String,
+        val allowRotation: Boolean,
+        val desktopMode: Boolean,
+        val incognito: Boolean,
+        val allowZoom: Boolean,
+        val allowSelection: Boolean,
+        val icon: Bitmap?,
+        val capture: Bitmap?
+    )
+
+    private fun currentSnapshot() = FormSnapshot(
+        url = binding.etUrl.text?.toString()?.trim().orEmpty(),
+        name = binding.etName.text?.toString()?.trim().orEmpty(),
+        folder = binding.etFolder.text?.toString()?.trim().orEmpty(),
+        backgroundColor = backgroundColor,
+        forcedTheme = when (binding.rgShortcutTheme.checkedRadioButtonId) {
+            R.id.rbShortcutLight -> WebViewActivity.THEME_LIGHT
+            R.id.rbShortcutDark -> WebViewActivity.THEME_DARK
+            else -> WebViewActivity.THEME_SYSTEM
+        },
+        allowRotation = binding.swAllowRotation.isChecked,
+        desktopMode = binding.swDesktopMode.isChecked,
+        incognito = binding.swIncognito.isChecked,
+        allowZoom = binding.swAllowZoom.isChecked,
+        allowSelection = binding.swAllowSelection.isChecked,
+        icon = croppedBitmap,
+        capture = captureBitmap
+    )
 
     private fun applyDefaultShortcutOptions() {
         when (Prefs.getDefaultShortcutTheme(this)) {
@@ -671,6 +707,7 @@ class MainActivity : BaseActivity() {
         applyDefaultShortcutOptions()
         binding.btnGenerate.setText(R.string.generate_shortcut)
         binding.tvHeaderTitle.setText(R.string.new_shortcut_title)
+        initialSnapshot = currentSnapshot()
     }
 
     private fun persistShortcutRecord(

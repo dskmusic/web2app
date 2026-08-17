@@ -104,6 +104,10 @@
     <string name="exit_confirm_message">¿Deseas salir de la aplicación?</string>
     <string name="exit_confirm_positive">Salir</string>
 
+    <string name="discard_changes_title">¿Descartar cambios?</string>
+    <string name="discard_changes_message">Se perderán los cambios que no has guardado.</string>
+    <string name="discard">Descartar</string>
+
     <string name="update_section_title">Actualizaciones</string>
     <string name="action_check_update">Buscar actualizaciones</string>
     <string name="update_available_title">Actualización disponible</string>

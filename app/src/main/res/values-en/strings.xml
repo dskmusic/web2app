@@ -104,6 +104,10 @@
     <string name="exit_confirm_message">Do you want to exit the app?</string>
     <string name="exit_confirm_positive">Exit</string>
 
+    <string name="discard_changes_title">Discard changes?</string>
+    <string name="discard_changes_message">Your unsaved changes will be lost.</string>
+    <string name="discard">Discard</string>
+
     <string name="update_section_title">Updates</string>
     <string name="action_check_update">Check for updates</string>
     <string name="update_available_title">Update available</string>
