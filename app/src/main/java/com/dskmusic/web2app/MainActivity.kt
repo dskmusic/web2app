@@ -14,6 +14,7 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.MotionEvent
 import android.view.View
+import android.widget.ImageView
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
@@ -122,7 +123,7 @@ class MainActivity : BaseActivity() {
         binding.btnGenerate.setOnClickListener { generateShortcut() }
 
         binding.btnSelectCapture.setOnClickListener { showCaptureSourceDialog() }
-        binding.ivCapturePreview.setOnClickListener { showCaptureSourceDialog() }
+        binding.ivCapturePreview.setOnClickListener { showCaptureFullscreen() }
         binding.btnClearCapture.setOnClickListener { clearCapture() }
 
         applyDefaultShortcutOptions()
@@ -130,12 +131,24 @@ class MainActivity : BaseActivity() {
         handleShareIntent()
 
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
-            override fun handleOnBackPressed() = confirmExit()
+            override fun handleOnBackPressed() {
+                if (hasUnsavedInput()) resetForm() else confirmExit()
+            }
         })
 
         lifecycleScope.launch {
             UpdateChecker.checkForUpdate(this@MainActivity)?.let { UpdateChecker.promptInstall(this@MainActivity, it) }
         }
+    }
+
+    /** While creating a new shortcut (not editing), anything entered counts as an undoable step. */
+    private fun hasUnsavedInput(): Boolean {
+        if (editingId != null) return false
+        return binding.etUrl.text?.isNotBlank() == true ||
+            binding.etName.text?.isNotBlank() == true ||
+            binding.etFolder.text?.isNotBlank() == true ||
+            croppedBitmap != null ||
+            captureBitmap != null
     }
 
     private fun confirmExit() {
@@ -345,6 +358,19 @@ class MainActivity : BaseActivity() {
         captureBitmap = bitmap
         captureRemoved = false
         refreshCapturePreview()
+    }
+
+    private fun showCaptureFullscreen() {
+        val bitmap = captureBitmap ?: return
+        val imageView = ImageView(this).apply {
+            setImageBitmap(bitmap)
+            adjustViewBounds = true
+            scaleType = ImageView.ScaleType.FIT_CENTER
+        }
+        MaterialAlertDialogBuilder(this)
+            .setView(imageView)
+            .setPositiveButton(android.R.string.ok, null)
+            .show()
     }
 
     private fun clearCapture() {
