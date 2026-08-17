@@ -55,8 +55,7 @@
         <activity
             android:name=".ShortcutManagerActivity"
             android:exported="true"
-            android:screenOrientation="portrait"
-            android:label="@string/shortcuts_manager_title">
+            android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />

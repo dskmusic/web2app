@@ -95,6 +95,7 @@ class ShortcutManagerActivity : BaseActivity() {
     override fun onPrepareOptionsMenu(menu: Menu): Boolean {
         val selecting = adapter.isInSelectionMode()
         menu.findItem(R.id.action_delete_selected).isVisible = selecting
+        menu.findItem(R.id.action_settings).isVisible = !selecting
         menu.findItem(R.id.action_export).isVisible = !selecting
         menu.findItem(R.id.action_import).isVisible = !selecting
         return super.onPrepareOptionsMenu(menu)
@@ -102,6 +103,7 @@ class ShortcutManagerActivity : BaseActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
+            R.id.action_settings -> { startActivity(Intent(this, SettingsActivity::class.java)); true }
             R.id.action_export -> { exportLauncher.launch("web2app_shortcuts.json"); true }
             R.id.action_import -> { importLauncher.launch(arrayOf("application/json")); true }
             R.id.action_delete_selected -> { confirmDeleteSelected(); true }
