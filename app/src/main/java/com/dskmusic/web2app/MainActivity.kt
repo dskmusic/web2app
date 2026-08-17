@@ -24,10 +24,8 @@ import androidx.core.content.FileProvider
 import androidx.core.content.pm.ShortcutInfoCompat
 import androidx.core.content.pm.ShortcutManagerCompat
 import androidx.core.graphics.drawable.IconCompat
-import androidx.core.text.HtmlCompat
 import androidx.lifecycle.lifecycleScope
 import com.dskmusic.web2app.databinding.ActivityMainBinding
-import com.dskmusic.web2app.update.UpdateChecker
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.yalantis.ucrop.UCrop
 import kotlinx.coroutines.launch
@@ -103,9 +101,6 @@ class MainActivity : BaseActivity() {
         setSupportActionBar(binding.toolbar)
         supportActionBar?.setDisplayShowTitleEnabled(false)
 
-        binding.tvFooterHeader.text = HtmlCompat.fromHtml(getString(R.string.footer_html_short), HtmlCompat.FROM_HTML_MODE_LEGACY)
-        binding.tvFooterHeader.movementMethod = android.text.method.LinkMovementMethod.getInstance()
-
         binding.etUrl.hideKeyboardOnImeAction()
         binding.etName.hideKeyboardOnImeAction()
         binding.etFolder.hideKeyboardOnImeAction()
@@ -135,10 +130,6 @@ class MainActivity : BaseActivity() {
                 if (hasUnsavedInput()) resetForm() else finish()
             }
         })
-
-        lifecycleScope.launch {
-            UpdateChecker.checkForUpdate(this@MainActivity)?.let { UpdateChecker.promptInstall(this@MainActivity, it) }
-        }
     }
 
     /** While creating a new shortcut (not editing), anything entered counts as an undoable step. */

@@ -15,8 +15,12 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import androidx.core.content.pm.ShortcutInfoCompat
 import androidx.core.content.pm.ShortcutManagerCompat
 import androidx.core.graphics.drawable.IconCompat
+import androidx.core.text.HtmlCompat
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.dskmusic.web2app.databinding.ActivityShortcutManagerBinding
+import com.dskmusic.web2app.update.UpdateChecker
+import kotlinx.coroutines.launch
 
 class ShortcutManagerActivity : BaseActivity() {
 
@@ -57,6 +61,9 @@ class ShortcutManagerActivity : BaseActivity() {
         setSupportActionBar(binding.toolbar)
         supportActionBar?.setDisplayShowTitleEnabled(false)
 
+        binding.tvFooter.text = HtmlCompat.fromHtml(getString(R.string.footer_html_short), HtmlCompat.FROM_HTML_MODE_LEGACY)
+        binding.tvFooter.movementMethod = android.text.method.LinkMovementMethod.getInstance()
+
         adapter = SavedShortcutAdapter(mutableListOf(), ::onEdit, ::onRepin, ::onDelete, ::onSelectionChanged)
         binding.recyclerView.layoutManager = LinearLayoutManager(this)
         binding.recyclerView.adapter = adapter
@@ -71,6 +78,10 @@ class ShortcutManagerActivity : BaseActivity() {
                 }
             }
         })
+
+        lifecycleScope.launch {
+            UpdateChecker.checkForUpdate(this@ShortcutManagerActivity)?.let { UpdateChecker.promptInstall(this@ShortcutManagerActivity, it) }
+        }
     }
 
     private fun confirmExit() {

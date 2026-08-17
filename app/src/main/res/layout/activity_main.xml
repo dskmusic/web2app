@@ -23,32 +23,14 @@
                 android:src="@mipmap/ic_launcher"
                 android:contentDescription="@string/app_name" />
 
-            <LinearLayout
+            <TextView
+                android:id="@+id/tvHeaderTitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="10dp"
-                android:orientation="horizontal"
-                android:gravity="bottom"
-                android:baselineAligned="true">
-
-                <TextView
-                    android:id="@+id/tvHeaderTitle"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/new_shortcut_title"
-                    android:textColor="?attr/colorOnPrimary"
-                    android:textSize="20sp" />
-
-                <TextView
-                    android:id="@+id/tvFooterHeader"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="8dp"
-                    android:alpha="0.8"
-                    android:textColor="?attr/colorOnPrimary"
-                    android:textColorLink="@color/white"
-                    android:textSize="12sp" />
-            </LinearLayout>
+                android:text="@string/new_shortcut_title"
+                android:textColor="?attr/colorOnPrimary"
+                android:textSize="20sp" />
         </LinearLayout>
     </com.google.android.material.appbar.MaterialToolbar>
 
