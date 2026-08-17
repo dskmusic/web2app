@@ -26,6 +26,16 @@ object BitmapUtils {
         }
     }
 
+    /** Downscales [source] so its longest side is at most [maxDimension], keeping aspect ratio. No-op if already smaller. */
+    fun scaleDownToMax(source: Bitmap, maxDimension: Int): Bitmap {
+        val largest = maxOf(source.width, source.height)
+        if (largest <= maxDimension) return source
+        val scale = maxDimension.toFloat() / largest
+        val width = (source.width * scale).toInt().coerceAtLeast(1)
+        val height = (source.height * scale).toInt().coerceAtLeast(1)
+        return Bitmap.createScaledBitmap(source, width, height, true)
+    }
+
     fun cropToSquare(source: Bitmap): Bitmap {
         val size = minOf(source.width, source.height)
         val x = (source.width - size) / 2

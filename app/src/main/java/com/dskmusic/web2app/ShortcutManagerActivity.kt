@@ -173,6 +173,7 @@ class ShortcutManagerActivity : BaseActivity() {
             .setIntent(intent)
             .build()
         ShortcutManagerCompat.requestPinShortcut(this, shortcutInfo, null)
+        moveTaskToBack(true)
     }
 
     private fun onDelete(item: SavedShortcut) {

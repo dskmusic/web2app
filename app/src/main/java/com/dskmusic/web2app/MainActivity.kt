@@ -354,7 +354,7 @@ class MainActivity : BaseActivity() {
             showToast(R.string.capture_clipboard_empty)
             return
         }
-        captureBitmap = bitmap
+        captureBitmap = BitmapUtils.scaleDownToMax(bitmap, CAPTURE_MAX_DIMENSION)
         captureRemoved = false
         refreshCapturePreview()
     }
@@ -661,7 +661,8 @@ class MainActivity : BaseActivity() {
 
         persistShortcutRecord(id, name, url, forcedTheme, allowRotation, desktopMode, incognito, allowZoom, allowSelection, finalIconBitmap, folder)
 
-        if (editingId != null) {
+        val wasEditing = editingId != null
+        if (wasEditing) {
             ShortcutManagerCompat.updateShortcuts(this, listOf(shortcutInfo))
             showToast(R.string.shortcut_updated)
         } else {
@@ -669,7 +670,9 @@ class MainActivity : BaseActivity() {
             showToast(R.string.shortcut_created)
         }
         resetForm()
-        moveTaskToBack(true)
+        // Only a fresh pin request needs to background the app so the user sees it land on the
+        // home screen; updating an already-pinned shortcut just returns to the manager list.
+        if (wasEditing) finish() else moveTaskToBack(true)
     }
 
     /**
@@ -744,5 +747,6 @@ class MainActivity : BaseActivity() {
 
     companion object {
         const val EXTRA_EDIT_ID = "extra_edit_id"
+        private const val CAPTURE_MAX_DIMENSION = 1024
     }
 }
