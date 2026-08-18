@@ -4,7 +4,13 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.Color
+import android.graphics.Matrix
+import android.graphics.Paint
+import android.graphics.Path
+import android.graphics.PorterDuff
+import android.graphics.PorterDuffXfermode
 import android.graphics.Rect
+import android.graphics.drawable.AdaptiveIconDrawable
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
@@ -34,6 +40,26 @@ object BitmapUtils {
         val width = (source.width * scale).toInt().coerceAtLeast(1)
         val height = (source.height * scale).toInt().coerceAtLeast(1)
         return Bitmap.createScaledBitmap(source, width, height, true)
+    }
+
+    /**
+     * Clips [bitmap] to this device's actual current adaptive-icon mask (rounded square, circle,
+     * squircle, teardrop... varies per launcher). Needed anywhere we hand the OS a flat bitmap
+     * ourselves — like the Recents task icon — since only the regular pinned-shortcut icon goes
+     * through the launcher's own adaptive-icon masking automatically; without this, that one shows
+     * as a plain hard-edged square while every other app's task icon is properly shaped.
+     */
+    fun applyAdaptiveIconMask(bitmap: Bitmap): Bitmap {
+        val result = Bitmap.createBitmap(bitmap.width, bitmap.height, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(result)
+        val mask = Path(AdaptiveIconDrawable.getIconMask()).apply {
+            transform(Matrix().apply { setScale(bitmap.width / 100f, bitmap.height / 100f) })
+        }
+        canvas.drawPath(mask, Paint(Paint.ANTI_ALIAS_FLAG))
+        canvas.drawBitmap(bitmap, 0f, 0f, Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            xfermode = PorterDuffXfermode(PorterDuff.Mode.SRC_IN)
+        })
+        return result
     }
 
     fun cropToSquare(source: Bitmap): Bitmap {

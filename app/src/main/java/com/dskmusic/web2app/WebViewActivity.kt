@@ -326,6 +326,7 @@ class WebViewActivity : BaseActivity() {
             ?.let { ShortcutStore.iconFile(this, it) }
             ?.takeIf { it.exists() }
             ?.let { BitmapFactory.decodeFile(it.absolutePath) }
+            ?.let { BitmapUtils.applyAdaptiveIconMask(it) }
         @Suppress("DEPRECATION")
         setTaskDescription(ActivityManager.TaskDescription(name, icon))
     }
