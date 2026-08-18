@@ -1,8 +1,12 @@
 package com.dskmusic.web2app
 
 import android.content.Intent
+import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.provider.DocumentsContract
+import android.provider.Settings
+import android.view.View
 import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
@@ -51,6 +55,18 @@ class SettingsActivity : BaseActivity() {
         binding.btnImport.setOnClickListener { importLauncher.launch(arrayOf("application/json")) }
         binding.btnReset.setOnClickListener { confirmReset() }
         binding.btnCheckUpdate.setOnClickListener { checkForUpdate() }
+        binding.btnEnableAutoBackup.setOnClickListener { requestAllFilesAccess() }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        binding.btnEnableAutoBackup.visibility = if (ShortcutStore.hasAllFilesAccess()) View.GONE else View.VISIBLE
+    }
+
+    private fun requestAllFilesAccess() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            startActivity(Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION, Uri.parse("package:$packageName")))
+        }
     }
 
     /** Suggests the shared "Web2App" folder and a timestamped filename, but the system picker still lets the user save anywhere. */

@@ -1,11 +1,9 @@
 package com.dskmusic.web2app
 
-import android.content.ContentValues
 import android.content.Context
 import android.net.Uri
 import android.os.Build
 import android.os.Environment
-import android.provider.MediaStore
 import android.util.Base64
 import org.json.JSONArray
 import org.json.JSONObject
@@ -175,50 +173,37 @@ object ShortcutStore {
     private const val BACKUP_FOLDER = "Web2App"
     private const val MAX_AUTO_BACKUPS = 10
 
-    /** Timestamped default name for a backup file: 20260818_223112_backup.json. */
+    /** Timestamped default name for a backup file: 20260818_223112_web2app.json. */
     fun backupFileName(): String =
-        "${SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())}_backup.json"
+        "${SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())}_web2app.json"
+
+    /** True once the user has granted "All files access" — required to write outside scoped/app-specific storage on Android 11+. */
+    fun hasAllFilesAccess(): Boolean =
+        Build.VERSION.SDK_INT < Build.VERSION_CODES.R || Environment.isExternalStorageManager()
 
     /**
-     * Silent backup written straight into the shared "Web2App" folder — no picker, no prompt.
-     * Keeps only the last [MAX_AUTO_BACKUPS] backups it wrote itself (tracked in Prefs, oldest
-     * deleted first, log-rotate style); a manual export the user placed in the same folder is
-     * never touched, since deletion only ever targets refs this function recorded itself.
+     * Silent backup written straight into the shared "Web2App" folder (sibling to Download, not
+     * inside it) — no picker, no prompt. No-ops until [hasAllFilesAccess] is granted. Keeps only
+     * the last [MAX_AUTO_BACKUPS] backups it wrote itself (tracked in Prefs, oldest deleted first,
+     * log-rotate style); a manual export the user placed in the same folder is never touched,
+     * since deletion only ever targets paths this function recorded itself.
      */
     fun writeAutoBackup(context: Context) {
+        if (!hasAllFilesAccess()) return
         runCatching {
-            val (uri, ref) = createBackupFile(context, backupFileName()) ?: return
-            exportTo(context, uri)
+            val file = backupFile(backupFileName())
+            exportTo(context, Uri.fromFile(file))
 
-            val updated = Prefs.getAutoBackups(context) + ref
+            val updated = Prefs.getAutoBackups(context) + file.absolutePath
             val overflow = (updated.size - MAX_AUTO_BACKUPS).coerceAtLeast(0)
-            updated.take(overflow).forEach { deleteBackupRef(context, it) }
+            updated.take(overflow).forEach { runCatching { File(it).delete() } }
             Prefs.setAutoBackups(context, updated.drop(overflow))
         }
     }
 
-    /** Creates a new file in the shared "Web2App" folder. Returns the writable Uri plus a ref string for later deletion. */
-    private fun createBackupFile(context: Context, fileName: String): Pair<Uri, String>? {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            val values = ContentValues().apply {
-                put(MediaStore.MediaColumns.DISPLAY_NAME, fileName)
-                put(MediaStore.MediaColumns.MIME_TYPE, "application/json")
-                put(MediaStore.MediaColumns.RELATIVE_PATH, "$BACKUP_FOLDER/")
-            }
-            val uri = context.contentResolver.insert(MediaStore.Files.getContentUri("external"), values) ?: return null
-            return uri to uri.toString()
-        }
-        @Suppress("DEPRECATION")
+    @Suppress("DEPRECATION")
+    private fun backupFile(fileName: String): File {
         val dir = File(Environment.getExternalStorageDirectory(), BACKUP_FOLDER).apply { mkdirs() }
-        val file = File(dir, fileName)
-        return Uri.fromFile(file) to file.absolutePath
-    }
-
-    private fun deleteBackupRef(context: Context, ref: String) {
-        if (ref.startsWith("content://")) {
-            runCatching { context.contentResolver.delete(Uri.parse(ref), null, null) }
-        } else {
-            runCatching { File(ref).delete() }
-        }
+        return File(dir, fileName)
     }
 }

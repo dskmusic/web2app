@@ -78,6 +78,7 @@
     <string name="import_success">%1$d accesos directos importados</string>
     <string name="more_options">Más opciones</string>
     <string name="backup_section_title">Copia de seguridad de accesos directos</string>
+    <string name="enable_auto_backup">Activar copias automáticas (acceso a todos los archivos)</string>
 
     <string name="theme_section_title">Tema</string>
     <string name="theme_system">Predeterminado</string>

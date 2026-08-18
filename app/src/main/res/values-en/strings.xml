@@ -78,6 +78,7 @@
     <string name="import_success">%1$d shortcuts imported</string>
     <string name="more_options">More options</string>
     <string name="backup_section_title">Shortcuts backup</string>
+    <string name="enable_auto_backup">Enable automatic backups (all files access)</string>
 
     <string name="theme_section_title">Theme</string>
     <string name="theme_system">System default</string>
