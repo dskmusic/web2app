@@ -4,7 +4,7 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.Color
-import android.graphics.RectF
+import android.graphics.Rect
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
@@ -60,18 +60,15 @@ object BitmapUtils {
      * own uniform background bleed, which is invisible. Used for both the preview and final icon.
      */
     fun composeAdaptive(source: Bitmap, bgColor: Int): Bitmap {
-        val trimmed = trimUniformBorder(source)
+        val trimmed = cropToSquare(trimUniformBorder(source))
         val size = maxOf(source.width, source.height)
         val result = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(result)
         canvas.drawColor(bgColor)
-        val boxSize = size * SAFE_ZONE_RATIO
-        val scale = boxSize / maxOf(trimmed.width, trimmed.height)
-        val destWidth = trimmed.width * scale
-        val destHeight = trimmed.height * scale
-        val left = (size - destWidth) / 2
-        val top = (size - destHeight) / 2
-        canvas.drawBitmap(trimmed, null, RectF(left, top, left + destWidth, top + destHeight), null)
+        val contentSize = (size * SAFE_ZONE_RATIO).toInt()
+        val offset = (size - contentSize) / 2
+        val destRect = Rect(offset, offset, offset + contentSize, offset + contentSize)
+        canvas.drawBitmap(trimmed, null, destRect, null)
         return result
     }
 
