@@ -72,7 +72,10 @@ class ShortcutManagerActivity : BaseActivity() {
         MaterialAlertDialogBuilder(this)
             .setTitle(R.string.exit_confirm_title)
             .setMessage(R.string.exit_confirm_message)
-            .setPositiveButton(R.string.exit_confirm_positive) { _, _ -> finish() }
+            .setPositiveButton(R.string.exit_confirm_positive) { _, _ ->
+                ShortcutStore.writeAutoBackup(this)
+                finish()
+            }
             .setNegativeButton(R.string.cancel, null)
             .show()
     }

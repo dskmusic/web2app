@@ -12,6 +12,7 @@ object Prefs {
     private const val KEY_DEFAULT_INCOGNITO = "default_incognito"
     private const val KEY_DEFAULT_ALLOW_ZOOM = "default_allow_zoom"
     private const val KEY_DEFAULT_ALLOW_SELECTION = "default_allow_selection"
+    private const val KEY_AUTO_BACKUPS = "auto_backups"
 
     const val THEME_SYSTEM = "system"
     const val THEME_LIGHT = "light"
@@ -60,6 +61,13 @@ object Prefs {
             .putBoolean(KEY_DEFAULT_ALLOW_SELECTION, allowSelection)
             .apply()
     }
+
+    /** File refs (content:// URIs or raw paths) of automatic backups this app wrote itself, oldest first — used to log-rotate without ever touching a manual export. */
+    fun getAutoBackups(context: Context): List<String> =
+        prefs(context).getString(KEY_AUTO_BACKUPS, "")!!.split("\n").filter { it.isNotBlank() }
+
+    fun setAutoBackups(context: Context, refs: List<String>) =
+        prefs(context).edit().putString(KEY_AUTO_BACKUPS, refs.joinToString("\n")).apply()
 
     fun clear(context: Context) = prefs(context).edit().clear().apply()
 }

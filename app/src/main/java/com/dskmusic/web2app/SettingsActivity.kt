@@ -2,6 +2,7 @@ package com.dskmusic.web2app
 
 import android.content.Intent
 import android.os.Bundle
+import android.provider.DocumentsContract
 import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
@@ -18,8 +19,9 @@ class SettingsActivity : BaseActivity() {
 
     override fun useNoActionBar(): Boolean = true
 
-    private val exportLauncher = registerForActivityResult(ActivityResultContracts.CreateDocument("application/json")) { uri ->
-        if (uri != null) {
+    private val exportLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        val uri = result.data?.data
+        if (result.resultCode == RESULT_OK && uri != null) {
             ShortcutStore.exportTo(this, uri)
             Toast.makeText(this, R.string.export_success, Toast.LENGTH_SHORT).show()
         }
@@ -45,10 +47,24 @@ class SettingsActivity : BaseActivity() {
         setupThemeSelector()
         setupLanguageSelector()
 
-        binding.btnExport.setOnClickListener { exportLauncher.launch("web2app_shortcuts.json") }
+        binding.btnExport.setOnClickListener { launchExport() }
         binding.btnImport.setOnClickListener { importLauncher.launch(arrayOf("application/json")) }
         binding.btnReset.setOnClickListener { confirmReset() }
         binding.btnCheckUpdate.setOnClickListener { checkForUpdate() }
+    }
+
+    /** Suggests the shared "Web2App" folder and a timestamped filename, but the system picker still lets the user save anywhere. */
+    private fun launchExport() {
+        val intent = Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
+            addCategory(Intent.CATEGORY_OPENABLE)
+            type = "application/json"
+            putExtra(Intent.EXTRA_TITLE, ShortcutStore.backupFileName())
+            putExtra(
+                DocumentsContract.EXTRA_INITIAL_URI,
+                DocumentsContract.buildDocumentUri("com.android.externalstorage.documents", "primary:Web2App")
+            )
+        }
+        exportLauncher.launch(intent)
     }
 
     override fun onSupportNavigateUp(): Boolean {

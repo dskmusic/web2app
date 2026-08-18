@@ -1,11 +1,18 @@
 package com.dskmusic.web2app
 
+import android.content.ContentValues
 import android.content.Context
 import android.net.Uri
+import android.os.Build
+import android.os.Environment
+import android.provider.MediaStore
 import android.util.Base64
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.File
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 /**
  * Local catalog of shortcuts this app has generated. ShortcutManager itself only lets a launcher
@@ -163,5 +170,55 @@ object ShortcutStore {
         }
         saveAll(context, newList)
         return imported
+    }
+
+    private const val BACKUP_FOLDER = "Web2App"
+    private const val MAX_AUTO_BACKUPS = 10
+
+    /** Timestamped default name for a backup file: 20260818_223112_backup.json. */
+    fun backupFileName(): String =
+        "${SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())}_backup.json"
+
+    /**
+     * Silent backup written straight into the shared "Web2App" folder — no picker, no prompt.
+     * Keeps only the last [MAX_AUTO_BACKUPS] backups it wrote itself (tracked in Prefs, oldest
+     * deleted first, log-rotate style); a manual export the user placed in the same folder is
+     * never touched, since deletion only ever targets refs this function recorded itself.
+     */
+    fun writeAutoBackup(context: Context) {
+        runCatching {
+            val (uri, ref) = createBackupFile(context, backupFileName()) ?: return
+            exportTo(context, uri)
+
+            val updated = Prefs.getAutoBackups(context) + ref
+            val overflow = (updated.size - MAX_AUTO_BACKUPS).coerceAtLeast(0)
+            updated.take(overflow).forEach { deleteBackupRef(context, it) }
+            Prefs.setAutoBackups(context, updated.drop(overflow))
+        }
+    }
+
+    /** Creates a new file in the shared "Web2App" folder. Returns the writable Uri plus a ref string for later deletion. */
+    private fun createBackupFile(context: Context, fileName: String): Pair<Uri, String>? {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            val values = ContentValues().apply {
+                put(MediaStore.MediaColumns.DISPLAY_NAME, fileName)
+                put(MediaStore.MediaColumns.MIME_TYPE, "application/json")
+                put(MediaStore.MediaColumns.RELATIVE_PATH, "$BACKUP_FOLDER/")
+            }
+            val uri = context.contentResolver.insert(MediaStore.Files.getContentUri("external"), values) ?: return null
+            return uri to uri.toString()
+        }
+        @Suppress("DEPRECATION")
+        val dir = File(Environment.getExternalStorageDirectory(), BACKUP_FOLDER).apply { mkdirs() }
+        val file = File(dir, fileName)
+        return Uri.fromFile(file) to file.absolutePath
+    }
+
+    private fun deleteBackupRef(context: Context, ref: String) {
+        if (ref.startsWith("content://")) {
+            runCatching { context.contentResolver.delete(Uri.parse(ref), null, null) }
+        } else {
+            runCatching { File(ref).delete() }
+        }
     }
 }
