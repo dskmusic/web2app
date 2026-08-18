@@ -52,7 +52,7 @@ object BitmapUtils {
     fun applyAdaptiveIconMask(bitmap: Bitmap): Bitmap {
         val result = Bitmap.createBitmap(bitmap.width, bitmap.height, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(result)
-        val mask = Path(AdaptiveIconDrawable.getIconMask()).apply {
+        val mask = Path(AdaptiveIconDrawable(null, null).iconMask).apply {
             transform(Matrix().apply { setScale(bitmap.width / 100f, bitmap.height / 100f) })
         }
         canvas.drawPath(mask, Paint(Paint.ANTI_ALIAS_FLAG))
