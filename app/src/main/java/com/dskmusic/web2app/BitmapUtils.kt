@@ -4,7 +4,7 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.Color
-import android.graphics.Rect
+import android.graphics.RectF
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
@@ -60,15 +60,71 @@ object BitmapUtils {
      * own uniform background bleed, which is invisible. Used for both the preview and final icon.
      */
     fun composeAdaptive(source: Bitmap, bgColor: Int): Bitmap {
+        val trimmed = trimUniformBorder(source)
         val size = maxOf(source.width, source.height)
         val result = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(result)
         canvas.drawColor(bgColor)
-        val contentSize = (size * SAFE_ZONE_RATIO).toInt()
-        val offset = (size - contentSize) / 2
-        val destRect = Rect(offset, offset, offset + contentSize, offset + contentSize)
-        canvas.drawBitmap(source, null, destRect, null)
+        val boxSize = size * SAFE_ZONE_RATIO
+        val scale = boxSize / maxOf(trimmed.width, trimmed.height)
+        val destWidth = trimmed.width * scale
+        val destHeight = trimmed.height * scale
+        val left = (size - destWidth) / 2
+        val top = (size - destHeight) / 2
+        canvas.drawBitmap(trimmed, null, RectF(left, top, left + destWidth, top + destHeight), null)
         return result
+    }
+
+    /**
+     * Crops away a uniform border matching [source]'s own corner color. Many picked icons (favicons
+     * especially) already bake in their own padding around the real content — without this, that
+     * padding stacks with composeAdaptive's own safe-zone inset and the visible content ends up
+     * tiny. No-op if the image already fills its own edges.
+     */
+    private fun trimUniformBorder(source: Bitmap, tolerance: Int = 30): Bitmap {
+        val w = source.width
+        val h = source.height
+        if (w <= 1 || h <= 1) return source
+        val pixels = IntArray(w * h)
+        source.getPixels(pixels, 0, w, 0, 0, w, h)
+        val bg = pixels[0]
+        val br = Color.red(bg); val bgc = Color.green(bg); val bb = Color.blue(bg); val ba = Color.alpha(bg)
+        val toleranceSq = tolerance * tolerance
+        fun isBackground(p: Int): Boolean {
+            if (p == bg) return true
+            if (ba == 0 && Color.alpha(p) == 0) return true // fully transparent pixels are indistinguishable regardless of their leftover RGB
+            val dr = Color.red(p) - br
+            val dg = Color.green(p) - bgc
+            val db = Color.blue(p) - bb
+            val da = Color.alpha(p) - ba
+            return dr * dr + dg * dg + db * db + da * da <= toleranceSq
+        }
+
+        var top = 0
+        top@ while (top < h) {
+            for (x in 0 until w) if (!isBackground(pixels[top * w + x])) break@top
+            top++
+        }
+        var bottom = h - 1
+        bottom@ while (bottom > top) {
+            for (x in 0 until w) if (!isBackground(pixels[bottom * w + x])) break@bottom
+            bottom--
+        }
+        var left = 0
+        left@ while (left < w) {
+            for (y in top..bottom) if (!isBackground(pixels[y * w + left])) break@left
+            left++
+        }
+        var right = w - 1
+        right@ while (right > left) {
+            for (y in top..bottom) if (!isBackground(pixels[y * w + right])) break@right
+            right--
+        }
+
+        val trimmedWidth = right - left + 1
+        val trimmedHeight = bottom - top + 1
+        if (trimmedWidth <= 0 || trimmedHeight <= 0 || (trimmedWidth == w && trimmedHeight == h)) return source
+        return Bitmap.createBitmap(source, left, top, trimmedWidth, trimmedHeight)
     }
 
     /**
