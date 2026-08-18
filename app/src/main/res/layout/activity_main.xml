@@ -330,11 +330,15 @@
                             android:textSize="13sp"
                             android:text="@string/allow_selection_label" />
 
-                        <View
+                        <com.google.android.material.materialswitch.MaterialSwitch
+                            android:id="@+id/swRememberSession"
                             android:layout_width="0dp"
-                            android:layout_height="0dp"
+                            android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:layout_marginStart="20dp" />
+                            android:layout_marginStart="20dp"
+                            android:checked="true"
+                            android:textSize="13sp"
+                            android:text="@string/remember_session_label" />
                     </LinearLayout>
 
                 </LinearLayout>

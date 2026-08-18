@@ -12,6 +12,7 @@ object Prefs {
     private const val KEY_DEFAULT_INCOGNITO = "default_incognito"
     private const val KEY_DEFAULT_ALLOW_ZOOM = "default_allow_zoom"
     private const val KEY_DEFAULT_ALLOW_SELECTION = "default_allow_selection"
+    private const val KEY_DEFAULT_REMEMBER_SESSION = "default_remember_session"
     private const val KEY_AUTO_BACKUPS = "auto_backups"
 
     const val THEME_SYSTEM = "system"
@@ -42,6 +43,7 @@ object Prefs {
     fun getDefaultIncognito(context: Context) = prefs(context).getBoolean(KEY_DEFAULT_INCOGNITO, false)
     fun getDefaultAllowZoom(context: Context) = prefs(context).getBoolean(KEY_DEFAULT_ALLOW_ZOOM, false)
     fun getDefaultAllowSelection(context: Context) = prefs(context).getBoolean(KEY_DEFAULT_ALLOW_SELECTION, false)
+    fun getDefaultRememberSession(context: Context) = prefs(context).getBoolean(KEY_DEFAULT_REMEMBER_SESSION, true)
 
     fun setDefaultShortcutOptions(
         context: Context,
@@ -50,7 +52,8 @@ object Prefs {
         desktopMode: Boolean,
         incognito: Boolean,
         allowZoom: Boolean,
-        allowSelection: Boolean
+        allowSelection: Boolean,
+        rememberSession: Boolean
     ) {
         prefs(context).edit()
             .putString(KEY_DEFAULT_SHORTCUT_THEME, forcedTheme)
@@ -59,6 +62,7 @@ object Prefs {
             .putBoolean(KEY_DEFAULT_INCOGNITO, incognito)
             .putBoolean(KEY_DEFAULT_ALLOW_ZOOM, allowZoom)
             .putBoolean(KEY_DEFAULT_ALLOW_SELECTION, allowSelection)
+            .putBoolean(KEY_DEFAULT_REMEMBER_SESSION, rememberSession)
             .apply()
     }
 

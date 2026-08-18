@@ -35,6 +35,7 @@ class WebViewActivity : BaseActivity() {
 
     private lateinit var binding: ActivityWebviewBinding
     private var incognito = false
+    private var rememberSession = true
     private var popupDialog: Dialog? = null
 
     private val storagePermissionLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
@@ -87,6 +88,7 @@ class WebViewActivity : BaseActivity() {
         applyDesktopMode()
         applyZoom()
         applySelectionLock()
+        applySessionPersistence()
         setupExternalBrowserGesture()
         applyTaskDescription()
 
@@ -105,10 +107,31 @@ class WebViewActivity : BaseActivity() {
         }
     }
 
+    override fun onPause() {
+        super.onPause()
+        // Cookies set via JS during a login flow can still be sitting only in memory; without an
+        // explicit flush they can be lost if the process is killed while backgrounded, forcing a
+        // re-login next time even though nothing looked wrong from inside the WebView.
+        if (!incognito) CookieManager.getInstance().flush()
+    }
+
     override fun onDestroy() {
         popupDialog?.dismiss()
         if (incognito) clearBrowsingData()
         super.onDestroy()
+    }
+
+    /**
+     * Third-party cookies default to blocked per WebView instance, but Google-style SSO/OAuth
+     * login flows (accounts.google.com embedded/redirected from another origin, e.g. AdSense) set
+     * their session cookie as third-party in that context — blocked, that session never survives
+     * to the next launch and the user has to log in every time.
+     */
+    private fun applySessionPersistence() {
+        rememberSession = intent.getBooleanExtra(EXTRA_REMEMBER_SESSION, true)
+        val cookieManager = CookieManager.getInstance()
+        cookieManager.setAcceptCookie(true)
+        cookieManager.setAcceptThirdPartyCookies(binding.webView, rememberSession)
     }
 
     /**
@@ -129,6 +152,10 @@ class WebViewActivity : BaseActivity() {
                     settings.userAgentString = binding.webView.settings.userAgentString
                     webViewClient = WebViewClient()
                 }
+                // The OAuth/SSO login itself typically happens in this popup, not the main WebView
+                // — it needs the same third-party cookie setting, or the session it just signed
+                // into won't survive back to the next launch either.
+                CookieManager.getInstance().setAcceptThirdPartyCookies(popupWebView, rememberSession)
                 popupDialog?.dismiss()
                 popupDialog = Dialog(this@WebViewActivity).apply {
                     setContentView(popupWebView)
@@ -324,6 +351,7 @@ class WebViewActivity : BaseActivity() {
         const val EXTRA_INCOGNITO = "extra_incognito"
         const val EXTRA_ALLOW_ZOOM = "extra_allow_zoom"
         const val EXTRA_ALLOW_SELECTION = "extra_allow_selection"
+        const val EXTRA_REMEMBER_SESSION = "extra_remember_session"
         const val THEME_SYSTEM = "system"
         const val THEME_LIGHT = "light"
         const val THEME_DARK = "dark"

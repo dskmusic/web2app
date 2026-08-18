@@ -12,5 +12,6 @@ data class SavedShortcut(
     val allowZoom: Boolean,
     val allowSelection: Boolean,
     val createdAt: Long,
-    val folder: String = ""
+    val folder: String = "",
+    val rememberSession: Boolean = true
 )

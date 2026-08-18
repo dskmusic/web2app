@@ -165,6 +165,7 @@ class ShortcutManagerActivity : BaseActivity() {
             putExtra(WebViewActivity.EXTRA_INCOGNITO, item.incognito)
             putExtra(WebViewActivity.EXTRA_ALLOW_ZOOM, item.allowZoom)
             putExtra(WebViewActivity.EXTRA_ALLOW_SELECTION, item.allowSelection)
+            putExtra(WebViewActivity.EXTRA_REMEMBER_SESSION, item.rememberSession)
         }
         val shortcutInfo = ShortcutInfoCompat.Builder(this, item.id)
             .setShortLabel(item.name)

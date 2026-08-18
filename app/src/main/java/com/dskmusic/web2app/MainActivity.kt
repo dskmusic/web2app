@@ -153,6 +153,7 @@ class MainActivity : BaseActivity() {
         val incognito: Boolean,
         val allowZoom: Boolean,
         val allowSelection: Boolean,
+        val rememberSession: Boolean,
         val icon: Bitmap?,
         val capture: Bitmap?
     )
@@ -172,6 +173,7 @@ class MainActivity : BaseActivity() {
         incognito = binding.swIncognito.isChecked,
         allowZoom = binding.swAllowZoom.isChecked,
         allowSelection = binding.swAllowSelection.isChecked,
+        rememberSession = binding.swRememberSession.isChecked,
         icon = croppedBitmap,
         capture = captureBitmap
     )
@@ -187,6 +189,7 @@ class MainActivity : BaseActivity() {
         binding.swIncognito.isChecked = Prefs.getDefaultIncognito(this)
         binding.swAllowZoom.isChecked = Prefs.getDefaultAllowZoom(this)
         binding.swAllowSelection.isChecked = Prefs.getDefaultAllowSelection(this)
+        binding.swRememberSession.isChecked = Prefs.getDefaultRememberSession(this)
     }
 
     private fun loadEditTarget() {
@@ -235,6 +238,7 @@ class MainActivity : BaseActivity() {
         binding.swIncognito.isChecked = saved.incognito
         binding.swAllowZoom.isChecked = saved.allowZoom
         binding.swAllowSelection.isChecked = saved.allowSelection
+        binding.swRememberSession.isChecked = saved.rememberSession
     }
 
     private fun handleShareIntent() {
@@ -647,7 +651,8 @@ class MainActivity : BaseActivity() {
         val incognito = binding.swIncognito.isChecked
         val allowZoom = binding.swAllowZoom.isChecked
         val allowSelection = binding.swAllowSelection.isChecked
-        Prefs.setDefaultShortcutOptions(this, forcedTheme, allowRotation, desktopMode, incognito, allowZoom, allowSelection)
+        val rememberSession = binding.swRememberSession.isChecked
+        Prefs.setDefaultShortcutOptions(this, forcedTheme, allowRotation, desktopMode, incognito, allowZoom, allowSelection, rememberSession)
 
         val intent = Intent(this, WebViewActivity::class.java).apply {
             action = Intent.ACTION_VIEW
@@ -661,6 +666,7 @@ class MainActivity : BaseActivity() {
             putExtra(WebViewActivity.EXTRA_INCOGNITO, incognito)
             putExtra(WebViewActivity.EXTRA_ALLOW_ZOOM, allowZoom)
             putExtra(WebViewActivity.EXTRA_ALLOW_SELECTION, allowSelection)
+            putExtra(WebViewActivity.EXTRA_REMEMBER_SESSION, rememberSession)
         }
 
         val shortcutInfo = ShortcutInfoCompat.Builder(this, id)
@@ -670,7 +676,7 @@ class MainActivity : BaseActivity() {
             .setIntent(intent)
             .build()
 
-        persistShortcutRecord(id, name, url, forcedTheme, allowRotation, desktopMode, incognito, allowZoom, allowSelection, finalIconBitmap, folder)
+        persistShortcutRecord(id, name, url, forcedTheme, allowRotation, desktopMode, incognito, allowZoom, allowSelection, rememberSession, finalIconBitmap, folder)
 
         val wasEditing = editingId != null
         if (wasEditing) {
@@ -720,6 +726,7 @@ class MainActivity : BaseActivity() {
         incognito: Boolean,
         allowZoom: Boolean,
         allowSelection: Boolean,
+        rememberSession: Boolean,
         finalIcon: Bitmap?,
         folder: String
     ) {
@@ -749,7 +756,8 @@ class MainActivity : BaseActivity() {
                 allowZoom = allowZoom,
                 allowSelection = allowSelection,
                 createdAt = System.currentTimeMillis(),
-                folder = folder
+                folder = folder,
+                rememberSession = rememberSession
             )
         )
     }

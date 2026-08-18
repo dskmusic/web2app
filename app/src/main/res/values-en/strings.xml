@@ -52,6 +52,7 @@
     <string name="incognito_mode_label">Incognito mode</string>
     <string name="allow_zoom_label">Pinch zoom</string>
     <string name="allow_selection_label">Selection</string>
+    <string name="remember_session_label">Remember session</string>
     <string name="update_shortcut">Update shortcut</string>
     <string name="shortcut_updated">Shortcut updated</string>
 

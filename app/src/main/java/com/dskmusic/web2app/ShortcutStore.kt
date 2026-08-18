@@ -67,6 +67,7 @@ object ShortcutStore {
         put("allowSelection", s.allowSelection)
         put("createdAt", s.createdAt)
         put("folder", s.folder)
+        put("rememberSession", s.rememberSession)
     }
 
     private fun fromJson(o: JSONObject) = SavedShortcut(
@@ -81,7 +82,8 @@ object ShortcutStore {
         allowZoom = o.optBoolean("allowZoom", false),
         allowSelection = o.optBoolean("allowSelection", false),
         createdAt = o.optLong("createdAt", System.currentTimeMillis()),
-        folder = o.optString("folder", "")
+        folder = o.optString("folder", ""),
+        rememberSession = o.optBoolean("rememberSession", true)
     )
 
     /** Self-contained export: app settings, plus shortcut metadata and the final icon (base64), in one JSON file. */
@@ -106,6 +108,7 @@ object ShortcutStore {
             put("defaultIncognito", Prefs.getDefaultIncognito(context))
             put("defaultAllowZoom", Prefs.getDefaultAllowZoom(context))
             put("defaultAllowSelection", Prefs.getDefaultAllowSelection(context))
+            put("defaultRememberSession", Prefs.getDefaultRememberSession(context))
         }
         val root = JSONObject().apply {
             put("settings", settings)
@@ -139,7 +142,8 @@ object ShortcutStore {
                     settings.optBoolean("defaultDesktopMode", Prefs.getDefaultDesktopMode(context)),
                     settings.optBoolean("defaultIncognito", Prefs.getDefaultIncognito(context)),
                     settings.optBoolean("defaultAllowZoom", Prefs.getDefaultAllowZoom(context)),
-                    settings.optBoolean("defaultAllowSelection", Prefs.getDefaultAllowSelection(context))
+                    settings.optBoolean("defaultAllowSelection", Prefs.getDefaultAllowSelection(context)),
+                    settings.optBoolean("defaultRememberSession", Prefs.getDefaultRememberSession(context))
                 )
             }
         }
